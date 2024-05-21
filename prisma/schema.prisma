@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model chapterComments {
+  chapterCommentId Int      @id @default(autoincrement()) @db.UnsignedInt
+  created_at       DateTime @default(now()) @db.Timestamp(0)
+  chapterId        Int      @db.UnsignedInt
+  userId           String   @db.Char(36)
+  content          String   @db.Text
+  users            users    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "chapterCommenterRelation")
+  chapters         chapters @relation(fields: [chapterId], references: [chapterId], onDelete: NoAction, onUpdate: NoAction, map: "chapterParentRelation")
+
+  @@index([chapterId], map: "chapterIndex")
+  @@index([userId], map: "userIndex")
+}
+
+model chapters {
+  chapterId       Int               @id @default(autoincrement()) @db.UnsignedInt
+  created_at      DateTime          @default(now()) @db.Timestamp(0)
+  literatureId    Int               @db.UnsignedInt
+  chapterTitle    String            @db.VarChar(255)
+  chapterNumber   Int
+  imageUrl        String            @db.Text
+  chapterComments chapterComments[]
+  literature      literature        @relation(fields: [literatureId], references: [literatureId], onDelete: NoAction, onUpdate: NoAction, map: "literatureParentRelation")
+
+  @@index([literatureId], map: "literatureIndex")
+}
+
+model donation {
+  donationId                       Int      @id @default(autoincrement()) @db.UnsignedInt
+  created_at                       DateTime @default(now()) @db.Timestamp(0)
+  senderId                         String   @db.Char(36)
+  receiverId                       String   @db.Char(36)
+  amount                           Int
+  users_donation_receiverIdTousers users    @relation("donation_receiverIdTousers", fields: [receiverId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "receiverRelation")
+  users_donation_senderIdTousers   users    @relation("donation_senderIdTousers", fields: [senderId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "senderRelation")
+
+  @@index([receiverId], map: "receiverIndex")
+  @@index([senderId], map: "senderIndex")
+}
+
+model forum {
+  forumId       Int             @id @default(autoincrement()) @db.UnsignedInt
+  created_at    DateTime        @default(now()) @db.Timestamp(0)
+  userId        String          @db.Char(36)
+  title         String          @db.VarChar(255)
+  content       String          @db.Text
+  votes         Int             @default(0)
+  genreId       Int             @db.UnsignedInt
+  genre         genre           @relation(fields: [genreId], references: [genreId], onDelete: NoAction, onUpdate: NoAction, map: "forumGenreRelation")
+  users         users           @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "originalPosterRelation")
+  forumComments forumComments[]
+
+  @@index([genreId], map: "genreIndex")
+  @@index([userId], map: "userIndex")
+}
+
+model forumComments {
+  forumCommentId Int      @id @default(autoincrement()) @db.UnsignedInt
+  created_at     DateTime @default(now()) @db.Timestamp(0)
+  forumId        Int      @db.UnsignedInt
+  userId         String   @db.Char(36)
+  content        String   @db.Text
+  users          users    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "commenterRelation")
+  forum          forum    @relation(fields: [forumId], references: [forumId], onDelete: NoAction, onUpdate: NoAction, map: "forumParentRelation")
+
+  @@index([forumId], map: "forumIndex")
+  @@index([userId], map: "userIndex")
+}
+
+model genre {
+  genreId    Int          @id @default(autoincrement()) @db.UnsignedInt
+  created_at DateTime     @default(now()) @db.Timestamp(0)
+  genreTitle String?      @db.VarChar(255)
+  forum      forum[]
+  literature literature[]
+}
+
+model literature {
+  literatureId       Int                  @id @default(autoincrement()) @db.UnsignedInt
+  created_at         DateTime             @default(now()) @db.Timestamp(0)
+  authorId           String               @db.Char(36)
+  title              String               @db.VarChar(255)
+  synopsis           String               @db.Text
+  imageUrl           String               @db.Text
+  genreId            Int                  @db.UnsignedInt
+  chapters           chapters[]
+  users              users                @relation(fields: [authorId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "authorRelation")
+  genre              genre                @relation(fields: [genreId], references: [genreId], onDelete: NoAction, onUpdate: NoAction, map: "genreRelation")
+  literatureComments literatureComments[]
+
+  @@index([authorId], map: "authorIndex")
+  @@index([genreId], map: "genreIndex")
+}
+
+model literatureComments {
+  literatureCommentId Int        @id @default(autoincrement()) @db.UnsignedInt
+  created_at          DateTime   @default(now()) @db.Timestamp(0)
+  userId              String     @db.Char(36)
+  literatureId        Int        @db.UnsignedInt
+  content             String     @db.Text
+  literature          literature @relation(fields: [literatureId], references: [literatureId], onDelete: NoAction, onUpdate: NoAction, map: "literatureRelation")
+  users               users      @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "userRelation")
+
+  @@index([literatureId], map: "literatureIndex")
+  @@index([userId], map: "userIndex")
+}
+
+model users {
+  userId                              String               @id @default(dbgenerated()) @db.Char(36)
+  created_at                          DateTime             @default(now()) @db.Timestamp(0)
+  username                            String               @db.VarChar(20)
+  email                               String               @unique @db.VarChar(255)
+  password                            String               @db.VarChar(255)
+  chapterComments                     chapterComments[]
+  donation_donation_receiverIdTousers donation[]           @relation("donation_receiverIdTousers")
+  donation_donation_senderIdTousers   donation[]           @relation("donation_senderIdTousers")
+  forum                               forum[]
+  forumComments                       forumComments[]
+  literature                          literature[]
+  literatureComments                  literatureComments[]
+}
