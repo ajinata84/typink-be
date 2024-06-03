@@ -21,13 +21,13 @@
                 {
                   "type": "text",
                   "name": "email",
-                  "value": "ajinata89@gmail.com",
+                  "value": "",
                   "enabled": true
                 },
                 {
                   "type": "text",
                   "name": "password",
-                  "value": "Ajinata0341",
+                  "value": "",
                   "enabled": true
                 }
               ]
@@ -64,19 +64,19 @@
                 {
                   "type": "text",
                   "name": "email",
-                  "value": "ajinata89@gmail.com",
+                  "value": "",
                   "enabled": true
                 },
                 {
                   "type": "text",
                   "name": "username",
-                  "value": "ajinata84",
+                  "value": "",
                   "enabled": true
                 },
                 {
                   "type": "text",
                   "name": "password",
-                  "value": "Ajinata0341",
+                  "value": "",
                   "enabled": true
                 }
               ]
