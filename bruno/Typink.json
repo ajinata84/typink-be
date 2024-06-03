@@ -1,0 +1,242 @@
+{
+  "name": "Typink",
+  "version": "1",
+  "items": [
+    {
+      "type": "folder",
+      "name": "Auth",
+      "items": [
+        {
+          "type": "http",
+          "name": "Login",
+          "seq": 2,
+          "request": {
+            "url": "http://localhost:7000/auth/login",
+            "method": "POST",
+            "headers": [],
+            "body": {
+              "mode": "multipartForm",
+              "formUrlEncoded": [],
+              "multipartForm": [
+                {
+                  "type": "text",
+                  "name": "email",
+                  "value": "ajinata89@gmail.com",
+                  "enabled": true
+                },
+                {
+                  "type": "text",
+                  "name": "password",
+                  "value": "Ajinata0341",
+                  "enabled": true
+                }
+              ]
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Register",
+          "seq": 1,
+          "request": {
+            "url": "{{localurl}}/auth/register",
+            "method": "POST",
+            "headers": [],
+            "body": {
+              "mode": "multipartForm",
+              "formUrlEncoded": [],
+              "multipartForm": [
+                {
+                  "type": "text",
+                  "name": "email",
+                  "value": "ajinata89@gmail.com",
+                  "enabled": true
+                },
+                {
+                  "type": "text",
+                  "name": "username",
+                  "value": "ajinata84",
+                  "enabled": true
+                },
+                {
+                  "type": "text",
+                  "name": "password",
+                  "value": "Ajinata0341",
+                  "enabled": true
+                }
+              ]
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        }
+      ]
+    },
+    {
+      "type": "folder",
+      "name": "Collections"
+    },
+    {
+      "type": "folder",
+      "name": "Chapter"
+    },
+    {
+      "type": "folder",
+      "name": "Forum"
+    },
+    {
+      "type": "folder",
+      "name": "Literature",
+      "items": [
+        {
+          "type": "http",
+          "name": "Create Literature",
+          "seq": 1,
+          "request": {
+            "url": "http://localhost:7000/literature/create",
+            "method": "POST",
+            "headers": [],
+            "body": {
+              "mode": "multipartForm",
+              "formUrlEncoded": [],
+              "multipartForm": [
+                {
+                  "type": "text",
+                  "name": "title",
+                  "value": "asdf2",
+                  "enabled": true
+                },
+                {
+                  "type": "text",
+                  "name": "synopsis",
+                  "value": "asdfasdf32313",
+                  "enabled": true
+                },
+                {
+                  "type": "text",
+                  "name": "imageUrl",
+                  "value": "https://plus.unsplash.com/premium_photo-1697730172915-26165f42ffe9?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                  "enabled": true
+                },
+                {
+                  "type": "text",
+                  "name": "genreId",
+                  "value": "1",
+                  "enabled": true
+                },
+                {
+                  "type": "text",
+                  "name": "language",
+                  "value": "asdfdd",
+                  "enabled": true
+                },
+                {
+                  "type": "text",
+                  "name": "copyright",
+                  "value": "2",
+                  "enabled": true
+                }
+              ]
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Get All Literature",
+          "seq": 2,
+          "request": {
+            "url": "{{localurl}}/literature/all",
+            "method": "GET",
+            "headers": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        }
+      ]
+    },
+    {
+      "type": "folder",
+      "name": "Vote"
+    },
+    {
+      "type": "folder",
+      "name": "Donation"
+    }
+  ],
+  "activeEnvironmentUid": "MsLyoNV1INNtzxPp9gtB5",
+  "environments": [
+    {
+      "variables": [
+        {
+          "name": "localurl",
+          "value": "http://localhost:7000",
+          "enabled": true,
+          "secret": false,
+          "type": "text"
+        }
+      ],
+      "name": "typink"
+    }
+  ]
+}

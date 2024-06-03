@@ -1,8 +1,8 @@
-import express from 'express';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
-import multer from 'multer';
-import jwtMiddleware, { customRequest } from '../middleware/jwtMiddleware';
+import express from "express";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
+import multer from "multer";
+import jwtMiddleware, { customRequest } from "../middleware/jwtMiddleware";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -24,53 +24,64 @@ const searchLiteratureSchema = z.object({
 });
 
 // Create literature for a user
-router.post('/create', jwtMiddleware, upload.none(), async (req: customRequest, res) => {
-  const result = createLiteratureSchema.safeParse(req.body);
+router.post(
+  "/create",
+  jwtMiddleware,
+  upload.none(),
+  async (req: customRequest, res) => {
+    const result = createLiteratureSchema.safeParse(req.body);
 
-  if (!result.success) {
-    return res.status(400).json({ errors: result.error.errors });
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
+    }
+
+    const { title, synopsis, imageUrl, genreId, language, copyright } =
+      result.data;
+    const authorId = req.userId!;
+
+    try {
+      const literature = await prisma.literature.create({
+        data: {
+          title,
+          synopsis,
+          imageUrl,
+          genreId,
+          language,
+          copyright,
+          authorId,
+        },
+      });
+
+      res.json(literature);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create literature" });
+    }
   }
-
-  const { title, synopsis, imageUrl, genreId, language, copyright } = result.data;
-  const authorId = req.userId!;
-
-  try {
-    const literature = await prisma.literature.create({
-      data: {
-        title,
-        synopsis,
-        imageUrl,
-        genreId,
-        language,
-        copyright,
-        authorId,
-      },
-    });
-
-    res.json(literature);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create literature' });
-  }
-});
+);
 
 // Get all literature
-router.get('/all', async (req, res) => {
+router.get("/all", async (req, res) => {
   try {
     const literature = await prisma.literature.findMany({
       include: {
         genre: true,
-        users: true,
+        users: {
+          select: {
+            username: true,
+            userId: true,
+          },
+        },
       },
     });
 
     res.json(literature);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch literature' });
+    res.status(500).json({ error: "Failed to fetch literature" });
   }
 });
 
 // Get all literature by genre
-router.get('/genre/:genreId', async (req, res) => {
+router.get("/genre/:genreId", async (req, res) => {
   const { genreId } = req.params;
 
   try {
@@ -84,12 +95,12 @@ router.get('/genre/:genreId', async (req, res) => {
 
     res.json(literature);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch literature by genre' });
+    res.status(500).json({ error: "Failed to fetch literature by genre" });
   }
 });
 
 // Get all literature by author
-router.get('/author/:authorId', async (req, res) => {
+router.get("/author/:authorId", async (req, res) => {
   const { authorId } = req.params;
 
   try {
@@ -103,12 +114,12 @@ router.get('/author/:authorId', async (req, res) => {
 
     res.json(literature);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch literature by author' });
+    res.status(500).json({ error: "Failed to fetch literature by author" });
   }
 });
 
 // Get literature by ID with comments and chapters
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -127,17 +138,17 @@ router.get('/:id', async (req, res) => {
     });
 
     if (!literature) {
-      return res.status(404).json({ error: 'Literature not found' });
+      return res.status(404).json({ error: "Literature not found" });
     }
 
     res.json(literature);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch literature' });
+    res.status(500).json({ error: "Failed to fetch literature" });
   }
 });
 
 // Search literature
-router.get('/search', async (req, res) => {
+router.get("/search", async (req, res) => {
   const result = searchLiteratureSchema.safeParse(req.query);
 
   if (!result.success) {
@@ -151,10 +162,7 @@ router.get('/search', async (req, res) => {
   try {
     const literature = await prisma.literature.findMany({
       where: {
-        OR: [
-          { title: { contains: query } },
-          { synopsis: { contains: query } },
-        ],
+        OR: [{ title: { contains: query } }, { synopsis: { contains: query } }],
       },
       skip,
       take,
@@ -166,7 +174,7 @@ router.get('/search', async (req, res) => {
 
     res.json(literature);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to search literature' });
+    res.status(500).json({ error: "Failed to search literature" });
   }
 });
 
