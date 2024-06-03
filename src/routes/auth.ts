@@ -53,7 +53,7 @@ router.post('/register', upload.none(), async (req, res) => {
 
     res.json({ token });
   } catch (error) {
-    res.status(500).json({ error: 'User registration failed' });
+    res.status(500).json({ error: error });
   }
 });
 

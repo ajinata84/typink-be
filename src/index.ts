@@ -8,6 +8,8 @@ import donationRoutes from './routes/donations';
 import forumRoutes from './routes/forum'
 import literatureRoutes from './routes/literature'
 import voteRoutes from './routes/vote'
+import chapterRoutes from './routes/chapter'
+
 
 
 dotenv.config();
@@ -25,6 +27,8 @@ app.use('/donations', donationRoutes);
 app.use('/forum', forumRoutes)
 app.use('/literature', literatureRoutes)
 app.use('/voting', voteRoutes)
+app.use('/chapter', chapterRoutes)
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -2,7 +2,7 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import multer from "multer";
-import jwtMiddleware from "../middleware/jwtMiddleware";
+import jwtMiddleware, { customRequest } from "../middleware/jwtMiddleware";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -17,7 +17,7 @@ const createChapterSchema = z.object({
 });
 
 const editChapterSchema = z.object({
-  chapterId: z.number().int().positive(),
+  chapterId: z.coerce.number().int().positive(),
   chapterTitle: z.string().min(1).optional(),
   chapterNumber: z.coerce.number().int().positive().optional(),
   imageUrl: z.string().url().optional(),
@@ -30,7 +30,7 @@ const commentSchema = z.object({
 });
 
 // Create a chapter for user's own literature
-router.post("/create", jwtMiddleware, upload.none(), async (req, res) => {
+router.post("/create", jwtMiddleware, upload.none(), async (req: customRequest, res) => {
   const result = createChapterSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -69,7 +69,7 @@ router.post("/create", jwtMiddleware, upload.none(), async (req, res) => {
 });
 
 // Edit a chapter
-router.put("/edit", jwtMiddleware, upload.none(), async (req, res) => {
+router.put("/edit", jwtMiddleware, upload.none(), async (req: customRequest, res) => {
   const result = editChapterSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -137,7 +137,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Comment on a chapter
-router.post("/comment", jwtMiddleware, upload.none(), async (req, res) => {
+router.post("/comment", jwtMiddleware, upload.none(), async (req: customRequest, res) => {
   const result = commentSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -158,7 +158,7 @@ router.post("/comment", jwtMiddleware, upload.none(), async (req, res) => {
 
     res.json(comment);
   } catch (error) {
-    res.status(500).json({ error: "Failed to post comment" });
+    res.status(500).json({ error: error });
   }
 });
 

@@ -43,6 +43,7 @@ model chapterComments {
   content          String   @db.Text
   users            users    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "chapterCommenterRelation")
   chapters         chapters @relation(fields: [chapterId], references: [chapterId], onDelete: NoAction, onUpdate: NoAction, map: "chapterParentRelation")
+  voteCount        Int      @default(0)
   Vote             Vote[]
 
   @@index([chapterId], map: "chapterIndex")
@@ -59,6 +60,7 @@ model chapters {
   content         String            @db.Text
   chapterComments chapterComments[]
   literature      literature        @relation(fields: [literatureId], references: [literatureId], onDelete: NoAction, onUpdate: NoAction, map: "literatureParentRelation")
+  voteCount       Int               @default(0)
   Vote            Vote[]
 
   @@index([literatureId], map: "literatureIndex")
@@ -83,7 +85,7 @@ model forum {
   userId        String          @db.Char(36)
   title         String          @db.VarChar(255)
   content       String          @db.Text
-  votes         Int             @default(0)
+  voteCount     Int             @default(0)
   genreId       Int             @db.UnsignedInt
   forumType     String          @db.VarChar(50) // Added forumType attribute
   genre         genre           @relation(fields: [genreId], references: [genreId], onDelete: NoAction, onUpdate: NoAction, map: "forumGenreRelation")
@@ -103,6 +105,7 @@ model forumComments {
   content        String   @db.Text
   users          users    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "commenterRelation")
   forum          forum    @relation(fields: [forumId], references: [forumId], onDelete: NoAction, onUpdate: NoAction, map: "forumParentRelation")
+  voteCount      Int      @default(0)
   Vote           Vote[]
 
   @@index([forumId], map: "forumIndex")
@@ -132,6 +135,7 @@ model literature {
   genre              genre                @relation(fields: [genreId], references: [genreId], onDelete: NoAction, onUpdate: NoAction, map: "genreRelation")
   literatureComments literatureComments[]
   collections        collections[]
+  voteCount          Int                  @default(0)
   Vote               Vote[]
 
   @@index([authorId], map: "authorIndex")
@@ -146,6 +150,7 @@ model literatureComments {
   content             String     @db.Text
   literature          literature @relation(fields: [literatureId], references: [literatureId], onDelete: NoAction, onUpdate: NoAction, map: "literatureRelation")
   users               users      @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "userRelation")
+  voteCount           Int        @default(0)
   Vote                Vote[]
 
   @@index([literatureId], map: "literatureIndex")

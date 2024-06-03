@@ -89,7 +89,12 @@ router.get("/genre/:genreId", async (req, res) => {
       where: { genreId: Number(genreId) },
       include: {
         genre: true,
-        users: true,
+        users: {
+          select: {
+            username: true,
+            userId: true,
+          },
+        },
       },
     });
 
@@ -108,7 +113,12 @@ router.get("/author/:authorId", async (req, res) => {
       where: { authorId },
       include: {
         genre: true,
-        users: true,
+        users: {
+          select: {
+            username: true,
+            userId: true,
+          },
+        },
       },
     });
 
@@ -127,7 +137,12 @@ router.get("/:id", async (req, res) => {
       where: { literatureId: Number(id) },
       include: {
         genre: true,
-        users: true,
+        users: {
+          select: {
+            username: true,
+            userId: true,
+          },
+        },
         chapters: {
           include: {
             chapterComments: true,
