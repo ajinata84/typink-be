@@ -7,6 +7,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Vote {
+  voteId              Int                 @id @default(autoincrement()) @db.UnsignedInt
+  userId              String              @db.Char(36)
+  voteType            Int                 @db.UnsignedInt
+  chapterId           Int?                @db.UnsignedInt
+  literatureId        Int?                @db.UnsignedInt
+  chapterCommentId    Int?                @db.UnsignedInt
+  literatureCommentId Int?                @db.UnsignedInt
+  forumId             Int?                @db.UnsignedInt
+  forumCommentId      Int?                @db.UnsignedInt
+  created_at          DateTime            @default(now()) @db.Timestamp(0)
+  users               users               @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+  chapters            chapters?           @relation(fields: [chapterId], references: [chapterId], onDelete: Cascade, onUpdate: Cascade)
+  literature          literature?         @relation(fields: [literatureId], references: [literatureId], onDelete: Cascade, onUpdate: Cascade)
+  chapterComments     chapterComments?    @relation(fields: [chapterCommentId], references: [chapterCommentId], onDelete: Cascade, onUpdate: Cascade)
+  literatureComments  literatureComments? @relation(fields: [literatureCommentId], references: [literatureCommentId], onDelete: Cascade, onUpdate: Cascade)
+  forum               forum?              @relation(fields: [forumId], references: [forumId], onDelete: Cascade, onUpdate: Cascade)
+  forumComments       forumComments?      @relation(fields: [forumCommentId], references: [forumCommentId], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([userId], map: "userIndex")
+  @@index([chapterId], map: "chapterIndex")
+  @@index([literatureId], map: "literatureIndex")
+  @@index([chapterCommentId], map: "chapterCommentIndex")
+  @@index([literatureCommentId], map: "literatureCommentIndex")
+  @@index([forumId], map: "forumIndex")
+  @@index([forumCommentId], map: "forumCommentIndex")
+}
+
 model chapterComments {
   chapterCommentId Int      @id @default(autoincrement()) @db.UnsignedInt
   created_at       DateTime @default(now()) @db.Timestamp(0)
@@ -15,6 +43,7 @@ model chapterComments {
   content          String   @db.Text
   users            users    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "chapterCommenterRelation")
   chapters         chapters @relation(fields: [chapterId], references: [chapterId], onDelete: NoAction, onUpdate: NoAction, map: "chapterParentRelation")
+  Vote             Vote[]
 
   @@index([chapterId], map: "chapterIndex")
   @@index([userId], map: "userIndex")
@@ -27,8 +56,10 @@ model chapters {
   chapterTitle    String            @db.VarChar(255)
   chapterNumber   Int
   imageUrl        String            @db.Text
+  content         String            @db.Text
   chapterComments chapterComments[]
   literature      literature        @relation(fields: [literatureId], references: [literatureId], onDelete: NoAction, onUpdate: NoAction, map: "literatureParentRelation")
+  Vote            Vote[]
 
   @@index([literatureId], map: "literatureIndex")
 }
@@ -54,9 +85,11 @@ model forum {
   content       String          @db.Text
   votes         Int             @default(0)
   genreId       Int             @db.UnsignedInt
+  forumType     String          @db.VarChar(50) // Added forumType attribute
   genre         genre           @relation(fields: [genreId], references: [genreId], onDelete: NoAction, onUpdate: NoAction, map: "forumGenreRelation")
   users         users           @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "originalPosterRelation")
   forumComments forumComments[]
+  Vote          Vote[]
 
   @@index([genreId], map: "genreIndex")
   @@index([userId], map: "userIndex")
@@ -70,6 +103,7 @@ model forumComments {
   content        String   @db.Text
   users          users    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "commenterRelation")
   forum          forum    @relation(fields: [forumId], references: [forumId], onDelete: NoAction, onUpdate: NoAction, map: "forumParentRelation")
+  Vote           Vote[]
 
   @@index([forumId], map: "forumIndex")
   @@index([userId], map: "userIndex")
@@ -91,10 +125,14 @@ model literature {
   synopsis           String               @db.Text
   imageUrl           String               @db.Text
   genreId            Int                  @db.UnsignedInt
+  language           String               @db.VarChar(255)
+  copyright          Int                  @db.Int
   chapters           chapters[]
   users              users                @relation(fields: [authorId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "authorRelation")
   genre              genre                @relation(fields: [genreId], references: [genreId], onDelete: NoAction, onUpdate: NoAction, map: "genreRelation")
   literatureComments literatureComments[]
+  collections        collections[]
+  Vote               Vote[]
 
   @@index([authorId], map: "authorIndex")
   @@index([genreId], map: "genreIndex")
@@ -108,17 +146,52 @@ model literatureComments {
   content             String     @db.Text
   literature          literature @relation(fields: [literatureId], references: [literatureId], onDelete: NoAction, onUpdate: NoAction, map: "literatureRelation")
   users               users      @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "userRelation")
+  Vote                Vote[]
 
   @@index([literatureId], map: "literatureIndex")
   @@index([userId], map: "userIndex")
 }
 
+model collections {
+  collectionId String     @id @default(uuid())
+  created_at   DateTime   @default(now()) @db.Timestamp(0)
+  userId       String     @db.Char(36)
+  literatureId Int        @db.UnsignedInt
+  users        users      @relation("UserCollections", fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+  literature   literature @relation(fields: [literatureId], references: [literatureId], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([userId], map: "userIndex")
+  @@index([literatureId], map: "literatureIndex")
+}
+
+model transactions {
+  transactionId   Int      @id @default(autoincrement()) @db.UnsignedInt
+  userId          String   @db.Char(36)
+  beforeBalance   Float
+  afterBalance    Float
+  transactionType String   @db.VarChar(50) // Type of transaction: 'withdraw', 'donation', etc.
+  created_at      DateTime @default(now()) @db.Timestamp(0)
+  users           users    @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([userId], map: "userIndex")
+}
+
+model admin {
+  adminId    Int      @id @default(autoincrement()) @db.UnsignedInt
+  username   String   @db.VarChar(50)
+  password   String   @db.VarChar(255)
+  email      String   @unique @db.VarChar(255)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+}
+
 model users {
-  userId                              String               @id @default(dbgenerated()) @db.Char(36)
+  userId                              String               @id @default(uuid())
   created_at                          DateTime             @default(now()) @db.Timestamp(0)
   username                            String               @db.VarChar(20)
   email                               String               @unique @db.VarChar(255)
   password                            String               @db.VarChar(255)
+  bio                                 String?              @db.Text // Optional bio field
+  balance                             Float                @default(0.0) // Balance for user's funds
   chapterComments                     chapterComments[]
   donation_donation_receiverIdTousers donation[]           @relation("donation_receiverIdTousers")
   donation_donation_senderIdTousers   donation[]           @relation("donation_senderIdTousers")
@@ -126,4 +199,7 @@ model users {
   forumComments                       forumComments[]
   literature                          literature[]
   literatureComments                  literatureComments[]
+  collections                         collections[]        @relation("UserCollections")
+  Vote                                Vote[]
+  transactions                        transactions[] // Added relation to transactions
 }

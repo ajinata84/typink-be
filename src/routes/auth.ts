@@ -15,6 +15,7 @@ const generateToken = (userId: string) => {
   return jwt.sign({ userId }, secret, { expiresIn: '1h' });
 };
 
+// Zod schemas
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -84,7 +85,7 @@ router.post('/login', upload.none(), async (req, res) => {
     const token = generateToken(user.userId);
 
     res.json({ token });
-  } catch (error) {
+  } catch (error) { 
     res.status(500).json({ error: 'User authentication failed' });
   }
 });
