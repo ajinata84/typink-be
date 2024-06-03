@@ -10,7 +10,7 @@ const upload = multer();
 
 const donationSchema = z.object({
   receiverId: z.string().uuid(),
-  amount: z.number().positive(),
+  amount:  z.coerce.number().positive(),
 });
 
 router.post("/donate", jwtMiddleware, upload.none(), async (req: customRequest, res) => {

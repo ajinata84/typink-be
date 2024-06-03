@@ -1,17 +1,17 @@
-import express from 'express';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
-import multer from 'multer';
-import jwtMiddleware from '../middleware/jwtMiddleware';
+import express from "express";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
+import multer from "multer";
+import jwtMiddleware from "../middleware/jwtMiddleware";
 
 const router = express.Router();
 const prisma = new PrismaClient();
 const upload = multer();
 
 const createChapterSchema = z.object({
-  literatureId: z.number().int().positive(),
+  literatureId: z.coerce.number().int().positive(),
   chapterTitle: z.string().min(1),
-  chapterNumber: z.number().int().positive(),
+  chapterNumber: z.coerce.number().int().positive(),
   imageUrl: z.string().url().optional(),
   content: z.string().min(1),
 });
@@ -19,26 +19,26 @@ const createChapterSchema = z.object({
 const editChapterSchema = z.object({
   chapterId: z.number().int().positive(),
   chapterTitle: z.string().min(1).optional(),
-  chapterNumber: z.number().int().positive().optional(),
+  chapterNumber: z.coerce.number().int().positive().optional(),
   imageUrl: z.string().url().optional(),
   content: z.string().min(1).optional(),
 });
 
 const commentSchema = z.object({
-  chapterId: z.number().int().positive(),
+  chapterId: z.coerce.number().int().positive(),
   content: z.string().min(1),
 });
 
 // Create a chapter for user's own literature
-router.post('/create', jwtMiddleware, upload.none(), async (req, res) => {
+router.post("/create", jwtMiddleware, upload.none(), async (req, res) => {
   const result = createChapterSchema.safeParse(req.body);
-  
 
   if (!result.success) {
     return res.status(400).json({ errors: result.error.errors });
   }
 
-  const { literatureId, chapterTitle, chapterNumber, imageUrl, content } = result.data;
+  const { literatureId, chapterTitle, chapterNumber, imageUrl, content } =
+    result.data;
   const userId = req.userId!;
 
   try {
@@ -47,7 +47,9 @@ router.post('/create', jwtMiddleware, upload.none(), async (req, res) => {
     });
 
     if (!literature || literature.authorId !== userId) {
-      return res.status(403).json({ error: 'Not authorized to add chapters to this literature' });
+      return res
+        .status(403)
+        .json({ error: "Not authorized to add chapters to this literature" });
     }
 
     const chapter = await prisma.chapters.create({
@@ -55,26 +57,27 @@ router.post('/create', jwtMiddleware, upload.none(), async (req, res) => {
         literatureId,
         chapterTitle,
         chapterNumber,
-        imageUrl: imageUrl || '',
+        imageUrl: imageUrl || "",
         content,
       },
     });
 
     res.json(chapter);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create chapter' });
+    res.status(500).json({ error: "Failed to create chapter" });
   }
 });
 
 // Edit a chapter
-router.put('/edit', jwtMiddleware, upload.none(), async (req, res) => {
+router.put("/edit", jwtMiddleware, upload.none(), async (req, res) => {
   const result = editChapterSchema.safeParse(req.body);
 
   if (!result.success) {
     return res.status(400).json({ errors: result.error.errors });
   }
 
-  const { chapterId, chapterTitle, chapterNumber, imageUrl, content } = result.data;
+  const { chapterId, chapterTitle, chapterNumber, imageUrl, content } =
+    result.data;
   const userId = req.userId!;
 
   try {
@@ -86,7 +89,9 @@ router.put('/edit', jwtMiddleware, upload.none(), async (req, res) => {
     });
 
     if (!chapter || chapter.literature.authorId !== userId) {
-      return res.status(403).json({ error: 'Not authorized to edit this chapter' });
+      return res
+        .status(403)
+        .json({ error: "Not authorized to edit this chapter" });
     }
 
     const updatedChapter = await prisma.chapters.update({
@@ -101,12 +106,12 @@ router.put('/edit', jwtMiddleware, upload.none(), async (req, res) => {
 
     res.json(updatedChapter);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to edit chapter' });
+    res.status(500).json({ error: "Failed to edit chapter" });
   }
 });
 
 // Get a chapter by ID with comments
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -122,17 +127,17 @@ router.get('/:id', async (req, res) => {
     });
 
     if (!chapter) {
-      return res.status(404).json({ error: 'Chapter not found' });
+      return res.status(404).json({ error: "Chapter not found" });
     }
 
     res.json(chapter);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch chapter' });
+    res.status(500).json({ error: "Failed to fetch chapter" });
   }
 });
 
 // Comment on a chapter
-router.post('/comment', jwtMiddleware, upload.none(), async (req, res) => {
+router.post("/comment", jwtMiddleware, upload.none(), async (req, res) => {
   const result = commentSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -153,7 +158,7 @@ router.post('/comment', jwtMiddleware, upload.none(), async (req, res) => {
 
     res.json(comment);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to post comment' });
+    res.status(500).json({ error: "Failed to post comment" });
   }
 });
 

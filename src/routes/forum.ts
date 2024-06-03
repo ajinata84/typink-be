@@ -11,12 +11,12 @@ const upload = multer();
 const createForumSchema = z.object({
   title: z.string().min(1),
   content: z.string().min(1),
-  genreId: z.number().int().positive(),
+  genreId: z.coerce.number().int().positive(),
   forumType: z.string().min(1),
 });
 
 const commentSchema = z.object({
-  forumId: z.number().int().positive(),
+  forumId: z.coerce.number().int().positive(),
   content: z.string().min(1),
 });
 
