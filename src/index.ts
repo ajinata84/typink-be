@@ -20,7 +20,7 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 
-app.use("/auth", authRoutes);
+app.use("/auth", authRoutes); 
 
 app.use("/collection", collectionRoutes);
 app.use("/donations", donationRoutes);
