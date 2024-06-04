@@ -9,6 +9,7 @@ COPY package*.json ./
 
 # Install app dependencies
 RUN npm install
+RUN npm install -g ts-node
 
 # Copy the entire app
 COPY . .
@@ -17,4 +18,4 @@ COPY . .
 EXPOSE 3000
 
 # Start the app
-CMD [ "node", "--watch", "src/index.ts" ]
+CMD [ "ts-node-esm", "src/index.ts" ]
