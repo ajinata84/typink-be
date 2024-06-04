@@ -1097,6 +1097,448 @@
           }
         }
       ]
+    },
+    {
+      "type": "folder",
+      "name": "Admin",
+      "items": [
+        {
+          "type": "folder",
+          "name": "Auth",
+          "items": [
+            {
+              "type": "http",
+              "name": "Register",
+              "seq": 1,
+              "request": {
+                "url": "{{localurl}}/admin/auth/register",
+                "method": "POST",
+                "headers": [],
+                "body": {
+                  "mode": "multipartForm",
+                  "formUrlEncoded": [],
+                  "multipartForm": [
+                    {
+                      "type": "text",
+                      "name": "email",
+                      "value": "",
+                      "enabled": true
+                    },
+                    {
+                      "type": "text",
+                      "name": "username",
+                      "value": "",
+                      "enabled": true
+                    },
+                    {
+                      "type": "text",
+                      "name": "password",
+                      "value": "",
+                      "enabled": true
+                    }
+                  ]
+                },
+                "auth": {
+                  "mode": "none",
+                  "basic": {
+                    "username": "",
+                    "password": ""
+                  },
+                  "bearer": {
+                    "token": ""
+                  }
+                },
+                "script": {},
+                "vars": {},
+                "assertions": [],
+                "tests": "",
+                "query": []
+              }
+            },
+            {
+              "type": "http",
+              "name": "Login",
+              "seq": 2,
+              "request": {
+                "url": "{{localurl}}/admin/auth/login",
+                "method": "POST",
+                "headers": [],
+                "body": {
+                  "mode": "multipartForm",
+                  "formUrlEncoded": [],
+                  "multipartForm": [
+                    {
+                      "type": "text",
+                      "name": "email",
+                      "value": "",
+                      "enabled": true
+                    },
+                    {
+                      "type": "text",
+                      "name": "password",
+                      "value": "",
+                      "enabled": true
+                    }
+                  ]
+                },
+                "auth": {
+                  "mode": "none",
+                  "basic": {
+                    "username": "",
+                    "password": ""
+                  },
+                  "bearer": {
+                    "token": ""
+                  }
+                },
+                "script": {},
+                "vars": {},
+                "assertions": [],
+                "tests": "",
+                "query": []
+              }
+            }
+          ]
+        },
+        {
+          "type": "http",
+          "name": "Delete Forum",
+          "seq": 4,
+          "request": {
+            "url": "{{localurl}}/admin/forum",
+            "method": "DELETE",
+            "headers": [],
+            "body": {
+              "mode": "multipartForm",
+              "formUrlEncoded": [],
+              "multipartForm": [
+                {
+                  "type": "text",
+                  "name": "id",
+                  "value": "",
+                  "enabled": true
+                }
+              ]
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Delete Forum Comment",
+          "seq": 5,
+          "request": {
+            "url": "",
+            "method": "DELETE",
+            "headers": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Delete Chapter",
+          "seq": 6,
+          "request": {
+            "url": "{{localurl}}/admin/chapter",
+            "method": "DELETE",
+            "headers": [],
+            "body": {
+              "mode": "multipartForm",
+              "json": "{\n  \"id\": 9\n}",
+              "formUrlEncoded": [],
+              "multipartForm": [
+                {
+                  "type": "text",
+                  "name": "id",
+                  "value": "10",
+                  "enabled": true
+                }
+              ]
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Delete Chapter Comment",
+          "seq": 7,
+          "request": {
+            "url": "{{localurl}}/admin/chapter-comment",
+            "method": "DELETE",
+            "headers": [],
+            "body": {
+              "mode": "multipartForm",
+              "formUrlEncoded": [],
+              "multipartForm": [
+                {
+                  "type": "text",
+                  "name": "id",
+                  "value": "",
+                  "enabled": true
+                }
+              ]
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Delete Literature",
+          "seq": 8,
+          "request": {
+            "url": "{{localurl}}/ladmin/literature",
+            "method": "DELETE",
+            "headers": [],
+            "body": {
+              "mode": "multipartForm",
+              "formUrlEncoded": [],
+              "multipartForm": [
+                {
+                  "type": "text",
+                  "name": "id",
+                  "value": "",
+                  "enabled": true
+                }
+              ]
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Delete Literature Comment",
+          "seq": 9,
+          "request": {
+            "url": "{{localurl}}/admin/literature-comment",
+            "method": "DELETE",
+            "headers": [],
+            "body": {
+              "mode": "multipartForm",
+              "formUrlEncoded": [],
+              "multipartForm": [
+                {
+                  "type": "text",
+                  "name": "id",
+                  "value": "",
+                  "enabled": true
+                }
+              ]
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Update Forum Announcement",
+          "seq": 2,
+          "request": {
+            "url": "{{localurl}}/admin/forum",
+            "method": "PUT",
+            "headers": [],
+            "body": {
+              "mode": "multipartForm",
+              "formUrlEncoded": [],
+              "multipartForm": [
+                {
+                  "type": "text",
+                  "name": "forumId",
+                  "value": "",
+                  "enabled": true
+                },
+                {
+                  "type": "text",
+                  "name": "title",
+                  "value": "",
+                  "enabled": true
+                },
+                {
+                  "type": "text",
+                  "name": "content",
+                  "value": "",
+                  "enabled": true
+                }
+              ]
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Create Forum Announcement",
+          "seq": 1,
+          "request": {
+            "url": "{{localurl}}/admin/forum",
+            "method": "POST",
+            "headers": [],
+            "body": {
+              "mode": "multipartForm",
+              "formUrlEncoded": [],
+              "multipartForm": [
+                {
+                  "type": "text",
+                  "name": "title",
+                  "value": "",
+                  "enabled": true
+                },
+                {
+                  "type": "text",
+                  "name": "content",
+                  "value": "",
+                  "enabled": true
+                }
+              ]
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "View Most Donated",
+          "seq": 9,
+          "request": {
+            "url": "{{localurl}}/admin/authors/most-donated",
+            "method": "GET",
+            "headers": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        }
+      ]
     }
   ],
   "activeEnvironmentUid": "vtbg4IjzBDGvLDMtRmqq8",
