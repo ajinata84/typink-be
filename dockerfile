@@ -18,4 +18,4 @@ COPY . .
 EXPOSE 3000
 
 # Start the app
-CMD [ "ts-node-esm", "src/index.ts" ]
+CMD [ "ts-node", "--esm", "src/index.ts" ]
