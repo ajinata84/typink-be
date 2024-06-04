@@ -229,6 +229,24 @@ router.put(
   }
 );
 
+// Get total number of users who have created literature
+router.get("/total-author", adminMiddleware, async (_req, res) => {
+  try {
+    const totalUsers = await prisma.literature.groupBy({
+      by: ["authorId"],
+      _count: true,
+    });
+
+    res.json({ totalUsers: totalUsers.length });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        error: "Failed to fetch total users who have created literature",
+      });
+  }
+});
+
 // View Most Donated Authors
 router.get(
   "/authors/most-donated",
