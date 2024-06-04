@@ -7,10 +7,14 @@ WORKDIR /app
 # Copy package.json and package-lock.json (if available)
 COPY package*.json ./
 
-# Install app dependencies
+# Install app dependencies including development dependencies
 RUN npm install
 
-RUN tsc
+# Ensure TypeScript is installed
+RUN npm install typescript
+
+# Run the TypeScript compiler
+RUN npx tsc
 
 # Copy the entire app
 COPY . .
