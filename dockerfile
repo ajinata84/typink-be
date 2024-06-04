@@ -10,6 +10,7 @@ COPY package*.json ./
 # Install app dependencies
 RUN npm install
 
+RUN tsc
 
 # Copy the entire app
 COPY . .
