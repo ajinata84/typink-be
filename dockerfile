@@ -2,7 +2,7 @@
 FROM node:21.2.0-alpine
 
 # Install app dependencies including development dependencies
-RUN npm i
+RUN npm install
 
 # Expose the port on which the app will run
 EXPOSE 3000
