@@ -25,4 +25,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ vars.DOCKERHUB_USERNAME }}/me:${{ vars.VERSION }}
+        tags: ${{ vars.DOCKERHUB_USERNAME }}/typink-be:${{ vars.VERSION }}
