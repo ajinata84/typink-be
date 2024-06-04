@@ -383,7 +383,7 @@
           "name": "Create Donation",
           "seq": 1,
           "request": {
-            "url": "{{localurl}}/donate",
+            "url": "{{localurl}}/donations/donate",
             "method": "POST",
             "headers": [],
             "body": {
@@ -393,13 +393,13 @@
                 {
                   "type": "text",
                   "name": "receiverId",
-                  "value": "",
+                  "value": "1c53dccb-bec3-4e24-82e5-aaf0b0f00ddd",
                   "enabled": true
                 },
                 {
                   "type": "text",
                   "name": "amount",
-                  "value": "",
+                  "value": "10000",
                   "enabled": true
                 }
               ]
@@ -426,7 +426,7 @@
           "name": "Get Donators by Receiver Id",
           "seq": 2,
           "request": {
-            "url": "{{localurl}}/donators/3",
+            "url": "{{localurl}}//donations/donators/3",
             "method": "GET",
             "headers": [],
             "body": {
@@ -456,7 +456,7 @@
           "name": "Get User's All Transactions By User Id",
           "seq": 3,
           "request": {
-            "url": "{{localurl}}/transaction/1",
+            "url": "{{localurl}}/donations/transaction/1",
             "method": "GET",
             "headers": [],
             "body": {
@@ -1170,13 +1170,13 @@
                     {
                       "type": "text",
                       "name": "email",
-                      "value": "",
+                      "value": "aji@gmail.com",
                       "enabled": true
                     },
                     {
                       "type": "text",
                       "name": "password",
-                      "value": "",
+                      "value": "12345678",
                       "enabled": true
                     }
                   ]
@@ -1537,6 +1537,36 @@
             "tests": "",
             "query": []
           }
+        },
+        {
+          "type": "http",
+          "name": "Get Author Total",
+          "seq": 10,
+          "request": {
+            "url": "{{localurl}}/admin/total-author",
+            "method": "GET",
+            "headers": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "inherit",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
         }
       ]
     }
@@ -1547,6 +1577,13 @@
       "variables": [
         {
           "name": "localurl",
+          "value": "http://api-typink.djie.cloud",
+          "enabled": true,
+          "secret": false,
+          "type": "text"
+        },
+        {
+          "name": "devurl",
           "value": "http://localhost:7000",
           "enabled": true,
           "secret": false,
