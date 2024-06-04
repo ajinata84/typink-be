@@ -193,4 +193,58 @@ router.get("/search", async (req, res) => {
   }
 });
 
+// Get literature by ID for authenticated user with donation check
+router.get(
+  "/:id/check-donation",
+  jwtMiddleware,
+  async (req: customRequest, res) => {
+    const { id } = req.params;
+    const userId = req.userId!; // Extract userId from JWT token
+
+    try {
+      const literature = await prisma.literature.findUnique({
+        where: { literatureId: Number(id) },
+        include: {
+          genre: true,
+          users: {
+            select: {
+              username: true,
+              userId: true,
+            },
+          },
+          chapters: {
+            include: {
+              chapterComments: true,
+            },
+          },
+          literatureComments: true,
+        },
+      });
+
+      if (!literature) {
+        return res.status(404).json({ error: "Literature not found" });
+      }
+
+      // Check if the authenticated user has donated to the author
+      const hasDonated = await prisma.donation.findFirst({
+        where: {
+          senderId: userId,
+          receiverId: literature.authorId,
+        },
+      });
+
+      const response = {
+        ...literature,
+        hasDonated: !!hasDonated,
+      };
+
+      res.json(response);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Failed to fetch literature or check donation status" });
+    }
+  }
+);
+
 export default router;

@@ -41,12 +41,12 @@ router.post(
   }
 );
 
-router.get("/", jwtMiddleware, async (req: customRequest, res) => {
-  const userId = req.userId; // Extract userId from JWT token
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
 
   try {
     const collections = await prisma.collections.findMany({
-      where: { userId },
+      where: { userId: id },
       include: {
         literature: true,
       },

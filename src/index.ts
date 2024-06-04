@@ -10,8 +10,6 @@ import literatureRoutes from './routes/literature'
 import voteRoutes from './routes/vote'
 import chapterRoutes from './routes/chapter'
 
-
-
 dotenv.config();
 
 const app = express();
@@ -22,7 +20,7 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 
-app.use('/collections', collectionRoutes);
+app.use('/collection', collectionRoutes);
 app.use('/donations', donationRoutes);
 app.use('/forum', forumRoutes)
 app.use('/literature', literatureRoutes)

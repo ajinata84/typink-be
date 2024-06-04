@@ -18,13 +18,13 @@ model Vote {
   forumId             Int?                @db.UnsignedInt
   forumCommentId      Int?                @db.UnsignedInt
   created_at          DateTime            @default(now()) @db.Timestamp(0)
-  users               users               @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
-  chapters            chapters?           @relation(fields: [chapterId], references: [chapterId], onDelete: Cascade, onUpdate: Cascade)
-  literature          literature?         @relation(fields: [literatureId], references: [literatureId], onDelete: Cascade, onUpdate: Cascade)
-  chapterComments     chapterComments?    @relation(fields: [chapterCommentId], references: [chapterCommentId], onDelete: Cascade, onUpdate: Cascade)
-  literatureComments  literatureComments? @relation(fields: [literatureCommentId], references: [literatureCommentId], onDelete: Cascade, onUpdate: Cascade)
-  forum               forum?              @relation(fields: [forumId], references: [forumId], onDelete: Cascade, onUpdate: Cascade)
-  forumComments       forumComments?      @relation(fields: [forumCommentId], references: [forumCommentId], onDelete: Cascade, onUpdate: Cascade)
+  chapterComments     chapterComments?    @relation(fields: [chapterCommentId], references: [chapterCommentId], onDelete: Cascade)
+  chapters            chapters?           @relation(fields: [chapterId], references: [chapterId], onDelete: Cascade)
+  forumComments       forumComments?      @relation(fields: [forumCommentId], references: [forumCommentId], onDelete: Cascade)
+  forum               forum?              @relation(fields: [forumId], references: [forumId], onDelete: Cascade)
+  literatureComments  literatureComments? @relation(fields: [literatureCommentId], references: [literatureCommentId], onDelete: Cascade)
+  literature          literature?         @relation(fields: [literatureId], references: [literatureId], onDelete: Cascade)
+  users               users               @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@index([userId], map: "userIndex")
   @@index([chapterId], map: "chapterIndex")
@@ -41,10 +41,10 @@ model chapterComments {
   chapterId        Int      @db.UnsignedInt
   userId           String   @db.Char(36)
   content          String   @db.Text
-  users            users    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "chapterCommenterRelation")
-  chapters         chapters @relation(fields: [chapterId], references: [chapterId], onDelete: NoAction, onUpdate: NoAction, map: "chapterParentRelation")
   voteCount        Int      @default(0)
   Vote             Vote[]
+  users            users    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "chapterCommenterRelation")
+  chapters         chapters @relation(fields: [chapterId], references: [chapterId], onDelete: NoAction, onUpdate: NoAction, map: "chapterParentRelation")
 
   @@index([chapterId], map: "chapterIndex")
   @@index([userId], map: "userIndex")
@@ -58,10 +58,10 @@ model chapters {
   chapterNumber   Int
   imageUrl        String            @db.Text
   content         String            @db.Text
-  chapterComments chapterComments[]
-  literature      literature        @relation(fields: [literatureId], references: [literatureId], onDelete: NoAction, onUpdate: NoAction, map: "literatureParentRelation")
   voteCount       Int               @default(0)
   Vote            Vote[]
+  chapterComments chapterComments[]
+  literature      literature        @relation(fields: [literatureId], references: [literatureId], onDelete: NoAction, onUpdate: NoAction, map: "literatureParentRelation")
 
   @@index([literatureId], map: "literatureIndex")
 }
@@ -85,13 +85,13 @@ model forum {
   userId        String          @db.Char(36)
   title         String          @db.VarChar(255)
   content       String          @db.Text
-  voteCount     Int             @default(0)
   genreId       Int             @db.UnsignedInt
-  forumType     String          @db.VarChar(50) // Added forumType attribute
+  forumType     String          @db.VarChar(50)
+  voteCount     Int             @default(0)
+  Vote          Vote[]
   genre         genre           @relation(fields: [genreId], references: [genreId], onDelete: NoAction, onUpdate: NoAction, map: "forumGenreRelation")
   users         users           @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "originalPosterRelation")
   forumComments forumComments[]
-  Vote          Vote[]
 
   @@index([genreId], map: "genreIndex")
   @@index([userId], map: "userIndex")
@@ -103,10 +103,10 @@ model forumComments {
   forumId        Int      @db.UnsignedInt
   userId         String   @db.Char(36)
   content        String   @db.Text
-  users          users    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "commenterRelation")
-  forum          forum    @relation(fields: [forumId], references: [forumId], onDelete: NoAction, onUpdate: NoAction, map: "forumParentRelation")
   voteCount      Int      @default(0)
   Vote           Vote[]
+  users          users    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "commenterRelation")
+  forum          forum    @relation(fields: [forumId], references: [forumId], onDelete: NoAction, onUpdate: NoAction, map: "forumParentRelation")
 
   @@index([forumId], map: "forumIndex")
   @@index([userId], map: "userIndex")
@@ -129,14 +129,14 @@ model literature {
   imageUrl           String               @db.Text
   genreId            Int                  @db.UnsignedInt
   language           String               @db.VarChar(255)
-  copyright          Int                  @db.Int
+  copyright          Int
+  voteCount          Int                  @default(0)
+  Vote               Vote[]
   chapters           chapters[]
+  collections        collections[]
   users              users                @relation(fields: [authorId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "authorRelation")
   genre              genre                @relation(fields: [genreId], references: [genreId], onDelete: NoAction, onUpdate: NoAction, map: "genreRelation")
   literatureComments literatureComments[]
-  collections        collections[]
-  voteCount          Int                  @default(0)
-  Vote               Vote[]
 
   @@index([authorId], map: "authorIndex")
   @@index([genreId], map: "genreIndex")
@@ -148,10 +148,10 @@ model literatureComments {
   userId              String     @db.Char(36)
   literatureId        Int        @db.UnsignedInt
   content             String     @db.Text
-  literature          literature @relation(fields: [literatureId], references: [literatureId], onDelete: NoAction, onUpdate: NoAction, map: "literatureRelation")
-  users               users      @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "userRelation")
   voteCount           Int        @default(0)
   Vote                Vote[]
+  literature          literature @relation(fields: [literatureId], references: [literatureId], onDelete: NoAction, onUpdate: NoAction, map: "literatureRelation")
+  users               users      @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "userRelation")
 
   @@index([literatureId], map: "literatureIndex")
   @@index([userId], map: "userIndex")
@@ -162,8 +162,8 @@ model collections {
   created_at   DateTime   @default(now()) @db.Timestamp(0)
   userId       String     @db.Char(36)
   literatureId Int        @db.UnsignedInt
-  users        users      @relation("UserCollections", fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
-  literature   literature @relation(fields: [literatureId], references: [literatureId], onDelete: Cascade, onUpdate: Cascade)
+  literature   literature @relation(fields: [literatureId], references: [literatureId], onDelete: Cascade)
+  users        users      @relation("UserCollections", fields: [userId], references: [userId], onDelete: Cascade)
 
   @@index([userId], map: "userIndex")
   @@index([literatureId], map: "literatureIndex")
@@ -174,9 +174,9 @@ model transactions {
   userId          String   @db.Char(36)
   beforeBalance   Float
   afterBalance    Float
-  transactionType String   @db.VarChar(50) // Type of transaction: 'withdraw', 'donation', etc.
+  transactionType String   @db.VarChar(50)
   created_at      DateTime @default(now()) @db.Timestamp(0)
-  users           users    @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+  users           users    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@index([userId], map: "userIndex")
 }
@@ -195,16 +195,16 @@ model users {
   username                            String               @db.VarChar(20)
   email                               String               @unique @db.VarChar(255)
   password                            String               @db.VarChar(255)
-  bio                                 String?              @db.Text // Optional bio field
-  balance                             Float                @default(0.0) // Balance for user's funds
+  bio                                 String?              @db.Text
+  balance                             Float                @default(0)
+  Vote                                Vote[]
   chapterComments                     chapterComments[]
+  collections                         collections[]        @relation("UserCollections")
   donation_donation_receiverIdTousers donation[]           @relation("donation_receiverIdTousers")
   donation_donation_senderIdTousers   donation[]           @relation("donation_senderIdTousers")
   forum                               forum[]
   forumComments                       forumComments[]
   literature                          literature[]
   literatureComments                  literatureComments[]
-  collections                         collections[]        @relation("UserCollections")
-  Vote                                Vote[]
-  transactions                        transactions[] // Added relation to transactions
+  transactions                        transactions[]
 }

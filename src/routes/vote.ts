@@ -144,7 +144,7 @@ const handleVote = async (
 };
 
 router.post(
-  "/vote/chapter",
+  "/chapter",
   jwtMiddleware,
   upload.none(),
   async (req: customRequest, res) => {
@@ -153,7 +153,7 @@ router.post(
 );
 
 router.post(
-  "/vote/literature",
+  "/literature",
   jwtMiddleware,
   upload.none(),
   async (req: customRequest, res) => {
@@ -162,7 +162,7 @@ router.post(
 );
 
 router.post(
-  "/vote/chapter-comment",
+  "/chapter-comment",
   jwtMiddleware,
   upload.none(),
   async (req: customRequest, res) => {
@@ -171,7 +171,7 @@ router.post(
 );
 
 router.post(
-  "/vote/literature-comment",
+  "/literature-comment",
   jwtMiddleware,
   upload.none(),
   async (req: customRequest, res) => {
@@ -180,7 +180,7 @@ router.post(
 );
 
 router.post(
-  "/vote/forum",
+  "/forum",
   jwtMiddleware,
   upload.none(),
   async (req: customRequest, res) => {
@@ -189,7 +189,7 @@ router.post(
 );
 
 router.post(
-  "/vote/forum-comment",
+  "/forum-comment",
   jwtMiddleware,
   upload.none(),
   async (req: customRequest, res) => {
