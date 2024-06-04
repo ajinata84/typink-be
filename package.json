@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
-  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon src/index.ts"
+    "dev": "nodemon src/index.ts",
+    "start": "node dist/index"
   },
   "keywords": [],
   "author": "",

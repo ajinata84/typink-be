@@ -9,7 +9,7 @@ COPY package*.json ./
 
 # Install app dependencies
 RUN npm install
-RUN npm install -g ts-node
+
 
 # Copy the entire app
 COPY . .
