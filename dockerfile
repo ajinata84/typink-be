@@ -10,12 +10,6 @@ COPY package*.json ./
 # Install app dependencies including development dependencies
 RUN npm install
 
-# Ensure TypeScript is installed
-RUN npm install typescript
-
-# Run the TypeScript compiler
-RUN npx tsc
-
 # Copy the entire app
 COPY . .
 
@@ -23,4 +17,4 @@ COPY . .
 EXPOSE 3000
 
 # Start the app
-CMD [ "npm", "start" ]
+CMD [ "npm", "run", "dev" ]
