@@ -30,83 +30,135 @@ const commentSchema = z.object({
 });
 
 // Create a chapter for user's own literature
-router.post("/create", jwtMiddleware, upload.none(), async (req: customRequest, res) => {
-  const result = createChapterSchema.safeParse(req.body);
+router.post(
+  "/create",
+  jwtMiddleware,
+  upload.none(),
+  async (req: customRequest, res) => {
+    const result = createChapterSchema.safeParse(req.body);
 
-  if (!result.success) {
-    return res.status(400).json({ errors: result.error.errors });
-  }
-
-  const { literatureId, chapterTitle, chapterNumber, imageUrl, content } =
-    result.data;
-  const userId = req.userId!;
-
-  try {
-    const literature = await prisma.literature.findUnique({
-      where: { literatureId },
-    });
-
-    if (!literature || literature.authorId !== userId) {
-      return res
-        .status(403)
-        .json({ error: "Not authorized to add chapters to this literature" });
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
     }
 
-    const chapter = await prisma.chapters.create({
-      data: {
-        literatureId,
-        chapterTitle,
-        chapterNumber,
-        imageUrl: imageUrl || "",
-        content,
+    const { literatureId, chapterTitle, chapterNumber, imageUrl, content } =
+      result.data;
+    const userId = req.userId!;
+
+    try {
+      const literature = await prisma.literature.findUnique({
+        where: { literatureId },
+      });
+
+      if (!literature || literature.authorId !== userId) {
+        return res
+          .status(403)
+          .json({ error: "Not authorized to add chapters to this literature" });
+      }
+
+      const chapter = await prisma.chapters.create({
+        data: {
+          literatureId,
+          chapterTitle,
+          chapterNumber,
+          imageUrl: imageUrl || "",
+          content,
+        },
+      });
+
+      res.json(chapter);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create chapter" });
+    }
+  }
+);
+
+// Edit a chapter
+router.put(
+  "/edit",
+  jwtMiddleware,
+  upload.none(),
+  async (req: customRequest, res) => {
+    const result = editChapterSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
+    }
+
+    const { chapterId, chapterTitle, chapterNumber, imageUrl, content } =
+      result.data;
+    const userId = req.userId!;
+
+    try {
+      const chapter = await prisma.chapters.findUnique({
+        where: { chapterId },
+        include: {
+          literature: true,
+        },
+      });
+
+      if (!chapter || chapter.literature.authorId !== userId) {
+        return res
+          .status(403)
+          .json({ error: "Not authorized to edit this chapter" });
+      }
+
+      const updatedChapter = await prisma.chapters.update({
+        where: { chapterId },
+        data: {
+          chapterTitle,
+          chapterNumber,
+          imageUrl,
+          content,
+        },
+      });
+
+      res.json(updatedChapter);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to edit chapter" });
+    }
+  }
+);
+
+router.get("/all", async (req, res) => {
+  try {
+    const chapters = await prisma.chapters.findMany({
+      include: {
+        literature: {
+          select: {
+            users: {
+              select: {
+                username: true,
+                userId: true,
+              },
+            },
+          },
+        },
       },
     });
 
-    res.json(chapter);
+    res.json(chapters);
   } catch (error) {
-    res.status(500).json({ error: "Failed to create chapter" });
+    res.status(500).json({ error: "Failed to fetch chapters" });
   }
 });
 
-// Edit a chapter
-router.put("/edit", jwtMiddleware, upload.none(), async (req: customRequest, res) => {
-  const result = editChapterSchema.safeParse(req.body);
-
-  if (!result.success) {
-    return res.status(400).json({ errors: result.error.errors });
-  }
-
-  const { chapterId, chapterTitle, chapterNumber, imageUrl, content } =
-    result.data;
-  const userId = req.userId!;
-
+router.get("/all-comments", async (req, res) => {
   try {
-    const chapter = await prisma.chapters.findUnique({
-      where: { chapterId },
+    const chapterComments = await prisma.chapterComments.findMany({
       include: {
-        literature: true,
+        users: {
+          select: {
+            username: true,
+            userId: true,
+          },
+        },
       },
     });
 
-    if (!chapter || chapter.literature.authorId !== userId) {
-      return res
-        .status(403)
-        .json({ error: "Not authorized to edit this chapter" });
-    }
-
-    const updatedChapter = await prisma.chapters.update({
-      where: { chapterId },
-      data: {
-        chapterTitle,
-        chapterNumber,
-        imageUrl,
-        content,
-      },
-    });
-
-    res.json(updatedChapter);
+    res.json(chapterComments);
   } catch (error) {
-    res.status(500).json({ error: "Failed to edit chapter" });
+    res.status(500).json({ error: "Failed to fetch chapter comments" });
   }
 });
 
@@ -137,29 +189,34 @@ router.get("/:id", async (req, res) => {
 });
 
 // Comment on a chapter
-router.post("/comment", jwtMiddleware, upload.none(), async (req: customRequest, res) => {
-  const result = commentSchema.safeParse(req.body);
+router.post(
+  "/comment",
+  jwtMiddleware,
+  upload.none(),
+  async (req: customRequest, res) => {
+    const result = commentSchema.safeParse(req.body);
 
-  if (!result.success) {
-    return res.status(400).json({ errors: result.error.errors });
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
+    }
+
+    const { chapterId, content } = result.data;
+    const userId = req.userId!;
+
+    try {
+      const comment = await prisma.chapterComments.create({
+        data: {
+          chapterId,
+          content,
+          userId,
+        },
+      });
+
+      res.json(comment);
+    } catch (error) {
+      res.status(500).json({ error: error });
+    }
   }
-
-  const { chapterId, content } = result.data;
-  const userId = req.userId!;
-
-  try {
-    const comment = await prisma.chapterComments.create({
-      data: {
-        chapterId,
-        content,
-        userId,
-      },
-    });
-
-    res.json(comment);
-  } catch (error) {
-    res.status(500).json({ error: error });
-  }
-});
+);
 
 export default router;
