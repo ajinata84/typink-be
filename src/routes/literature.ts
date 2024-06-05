@@ -247,4 +247,125 @@ router.get(
   }
 );
 
+// Get today's top picks
+router.get("/top-picks", async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const topPicks = await prisma.literature.findMany({
+      orderBy: {
+        voteCount: "desc",
+      },
+      take: 10,
+      include: {
+        genre: true,
+        users: true,
+      },
+      where: {
+        chapters: {
+          some: {
+            created_at: {
+              gte: today,
+            },
+          },
+        },
+      },
+    });
+
+    if (topPicks.length === 0) {
+      const fallbackPicks = await prisma.literature.findMany({
+        orderBy: {
+          voteCount: "desc",
+        },
+        take: 10,
+        include: {
+          genre: true,
+          users: true,
+        },
+      });
+
+      return res.json(fallbackPicks);
+    }
+
+    res.json(topPicks);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch top picks" });
+  }
+});
+
+// Get today's latest updates
+router.get("/latest-updates", async (req, res) => {
+  try {
+    // Step 1: Fetch the latest chapters
+    const latestChapters = await prisma.chapters.findMany({
+      take: 12,
+      orderBy: {
+        created_at: "desc",
+      },
+      select: {
+        literatureId: true,
+      },
+    });
+
+    // Extract unique literature IDs
+    const literatureIds = Array.from(
+      new Set(latestChapters.map((chapter) => chapter.literatureId))
+    );
+
+    // Step 2: Fetch the literature records based on those chapters
+    const latestUpdates = await prisma.literature.findMany({
+      where: {
+        literatureId: { in: literatureIds },
+      },
+      include: {
+        genre: true,
+        users: {
+          select: {
+            username: true,
+            userId: true,
+          },
+        },
+        chapters: true,
+      },
+    });
+
+    res.json(latestUpdates);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch latest updates" });
+  }
+});
+
+// Delete user's own literature
+router.delete("/delete/:id", jwtMiddleware, async (req: customRequest, res) => {
+  const { id } = req.params;
+  const userId = req.userId!; // Extract userId from JWT token
+
+  try {
+    // Find the literature to ensure it exists and is owned by the user
+    const literature = await prisma.literature.findUnique({
+      where: { literatureId: Number(id) },
+    });
+
+    if (!literature) {
+      return res.status(404).json({ error: "Literature not found" });
+    }
+
+    if (literature.authorId !== userId) {
+      return res.status(403).json({ error: "You are not authorized to delete this literature" });
+    }
+
+    // Delete the literature
+    await prisma.literature.delete({
+      where: { literatureId: Number(id) },
+    });
+
+    res.status(200).json({ message: "Literature deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to delete literature" });
+  }
+});
+
 export default router;
