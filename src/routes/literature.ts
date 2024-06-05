@@ -134,7 +134,7 @@ router.get("/author/:authorId", async (req, res) => {
 });
 
 // Get literature by ID with comments and chapters
-router.get("/literatureid/:id", async (req, res) => {
+router.get("/:id/fetch", async (req, res) => {
   const { id } = req.params;
 
   try {
