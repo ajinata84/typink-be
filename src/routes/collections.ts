@@ -58,4 +58,38 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// Delete collection for the authenticated user
+router.delete(
+  "/:collectionId",
+  jwtMiddleware,
+  async (req: customRequest, res) => {
+    const { collectionId } = req.params;
+    const userId = req.userId; // Extract userId from JWT token
+
+    try {
+      // Check if the collection belongs to the authenticated user
+      const collection = await prisma.collections.findUnique({
+        where: { collectionId },
+      });
+
+      if (!collection) {
+        return res.status(404).json({ error: "Collection not found" });
+      }
+
+      if (collection.userId !== userId) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      // Delete the collection
+      await prisma.collections.delete({
+        where: { collectionId },
+      });
+
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete collection" });
+    }
+  }
+);
+
 export default router;
