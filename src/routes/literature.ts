@@ -81,7 +81,7 @@ router.get("/all", async (req, res) => {
 
     res.json(literature);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch literature" });
+    res.status(500).json({ error: "Failed to asdfasdf" });
   }
 });
 
@@ -134,7 +134,7 @@ router.get("/author/:authorId", async (req, res) => {
 });
 
 // Get literature by ID with comments and chapters
-router.get("/:id", async (req, res) => {
+router.get("/literatureid/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
