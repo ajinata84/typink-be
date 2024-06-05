@@ -17,6 +17,11 @@ const createLiteratureSchema = z.object({
   copyright: z.coerce.number().int().positive(),
 });
 
+const createLiteratureCommentSchema = z.object({
+  content: z.string().min(1),
+  literatureId: z.coerce.number().int().positive(),
+});
+
 const searchLiteratureSchema = z.object({
   query: z.string().min(1),
   page: z.string().optional(),
@@ -192,5 +197,93 @@ router.get("/search", async (req, res) => {
     res.status(500).json({ error: "Failed to search literature" });
   }
 });
+
+// Create a literature comment
+router.post(
+  "/:literatureId/comment",
+  jwtMiddleware,
+  upload.none(),
+  async (req: customRequest, res) => {
+    const result = createLiteratureCommentSchema.safeParse({
+      ...req.body,
+      literatureId: req.params.literatureId,
+    });
+
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
+    }
+
+    const { content, literatureId } = result.data;
+    const userId = req.userId!;
+
+    try {
+      const comment = await prisma.literatureComments.create({
+        data: {
+          content,
+          literatureId: Number(literatureId),
+          userId,
+        },
+      });
+
+      res.json(comment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create comment" });
+    }
+  }
+);
+
+// Get all comments for a specific literature
+router.get("/:literatureId/comments", async (req, res) => {
+  const { literatureId } = req.params;
+
+  try {
+    const comments = await prisma.literatureComments.findMany({
+      where: { literatureId: Number(literatureId) },
+      include: {
+        users: {
+          select: {
+            username: true,
+          },
+        },
+      },
+    });
+
+    res.json(comments);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch comments" });
+  }
+});
+
+// Delete a literature comment
+router.delete(
+  "/comment/:commentId",
+  jwtMiddleware,
+  async (req: customRequest, res) => {
+    const { commentId } = req.params;
+    const userId = req.userId!;
+
+    try {
+      const comment = await prisma.literatureComments.findUnique({
+        where: { literatureCommentId: Number(commentId) },
+      });
+
+      if (!comment) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
+
+      if (comment.userId !== userId) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      await prisma.literatureComments.delete({
+        where: { literatureCommentId: Number(commentId) },
+      });
+
+      res.json({ message: "Comment deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete comment" });
+    }
+  }
+);
 
 export default router;
