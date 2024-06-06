@@ -26,58 +26,68 @@ const forumQuerySchema = z.object({
 });
 
 // Create a forum post
-router.post("/create", jwtMiddleware, upload.none(), async (req: customRequest, res) => {
-  const result = createForumSchema.safeParse(req.body);
+router.post(
+  "/create",
+  jwtMiddleware,
+  upload.none(),
+  async (req: customRequest, res) => {
+    const result = createForumSchema.safeParse(req.body);
 
-  if (!result.success) {
-    return res.status(400).json({ errors: result.error.errors });
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
+    }
+
+    const { title, content, genreId, forumType } = result.data;
+    const userId = req.userId!;
+
+    try {
+      const forum = await prisma.forum.create({
+        data: {
+          title,
+          content,
+          genreId,
+          forumType,
+          userId,
+        },
+      });
+
+      res.json(forum);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create forum post" });
+    }
   }
-
-  const { title, content, genreId, forumType } = result.data;
-  const userId = req.userId!;
-
-  try {
-    const forum = await prisma.forum.create({
-      data: {
-        title,
-        content,
-        genreId,
-        forumType,
-        userId,
-      },
-    });
-
-    res.json(forum);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create forum post" });
-  }
-});
+);
 
 // Post a comment on a forum
-router.post("/comment", jwtMiddleware, upload.none(), async (req: customRequest, res) => {
-  const result = commentSchema.safeParse(req.body);
+router.post(
+  "/comment",
+  jwtMiddleware,
+  upload.none(),
+  async (req: customRequest, res) => {
+    const result = commentSchema.safeParse(req.body);
 
-  if (!result.success) {
-    return res.status(400).json({ errors: result.error.errors });
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
+    }
+
+    const { forumId, content } = result.data;
+    const userId = req.userId!;
+
+    try {
+      const comment = await prisma.forumComments.create({
+        data: {
+          forumId,
+          content,
+          userId,
+        },
+      });
+
+      res.json(comment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to post comment" });
+    }
   }
-
-  const { forumId, content } = result.data;
-  const userId = req.userId!;
-
-  try {
-    const comment = await prisma.forumComments.create({
-      data: {
-        forumId,
-        content,
-        userId,
-      },
-    });
-
-    res.json(comment);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to post comment" });
-  }
-});
+);
 
 router.get("/all", async (req, res) => {
   const result = forumQuerySchema.safeParse(req.query);
@@ -107,7 +117,7 @@ router.get("/all", async (req, res) => {
 });
 
 // Get a specific forum post by ID
-router.get("/:id", async (req, res) => {
+router.get("/id/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -126,6 +136,67 @@ router.get("/:id", async (req, res) => {
     res.json(forum);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch forum post" });
+  }
+});
+
+// Fetch forums with the newest comments
+router.get("/recent-activity", async (req, res) => {
+  try {
+    // Step 1: Get the latest comments
+    const recentComments = await prisma.forumComments.findMany({
+      take: 10,
+      orderBy: {
+        created_at: "desc",
+      },
+      select: {
+        forumId: true,
+      },
+    });
+
+    // Extract unique forum IDs
+    const forumIds = Array.from(
+      new Set(recentComments.map((comment) => comment.forumId))
+    );
+
+    // Step 2: Get the forums associated with those comments
+    const forums = await prisma.forum.findMany({
+      where: {
+        forumId: { in: forumIds },
+      },
+      include: {
+        users: true,
+        forumComments: {
+          orderBy: {
+            created_at: "desc",
+          },
+        },
+      },
+    });
+
+    res.json(forums);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Failed to fetch forums with recent activity" });
+  }
+});
+
+// Fetch forums of type "announcement"
+router.get("/announcements", async (req, res) => {
+  try {
+    const announcements = await prisma.forum.findMany({
+      where: {
+        forumType: "announcement",
+      },
+      include: {
+        users: true,
+        forumComments: true,
+      },
+    });
+
+    res.json(announcements);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch announcement forums" });
   }
 });
 

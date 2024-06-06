@@ -28,7 +28,7 @@ router.post(
     const senderId = req.userId!; // Extract userId from JWT token
 
     try {
-      // Retrieve the sender's current balance
+      // Check if sender and receiver exist
       const sender = await prisma.users.findUnique({
         where: { userId: senderId },
       });
@@ -40,9 +40,6 @@ router.post(
         return res.status(404).json({ error: "Sender or receiver not found" });
       }
 
-      const senderBeforeBalance = sender.balance;
-      const receiverBeforeBalance = receiver.balance;
-
       // Create the donation record
       const donation = await prisma.donation.create({
         data: {
@@ -52,22 +49,11 @@ router.post(
         },
       });
 
-      // Update the receiver's balance
-      await prisma.users.update({
-        where: { userId: receiverId },
-        data: {
-          balance: {
-            increment: amount,
-          },
-        },
-      });
-
       // Log transaction for sender (outgoing donation)
       await prisma.transactions.create({
         data: {
           userId: senderId,
-          beforeBalance: senderBeforeBalance,
-          afterBalance: senderBeforeBalance - amount,
+          value: -amount,
           transactionType: "outgoing donation",
         },
       });
@@ -76,8 +62,7 @@ router.post(
       await prisma.transactions.create({
         data: {
           userId: receiverId,
-          beforeBalance: receiverBeforeBalance,
-          afterBalance: receiverBeforeBalance + amount,
+          value: amount,
           transactionType: "incoming donation",
         },
       });

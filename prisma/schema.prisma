@@ -172,8 +172,7 @@ model collections {
 model transactions {
   transactionId   Int      @id @default(autoincrement()) @db.UnsignedInt
   userId          String   @db.Char(36)
-  beforeBalance   Float
-  afterBalance    Float
+  value           Float
   transactionType String   @db.VarChar(50)
   created_at      DateTime @default(now()) @db.Timestamp(0)
   users           users    @relation(fields: [userId], references: [userId], onDelete: Cascade)
@@ -196,7 +195,6 @@ model users {
   email                               String               @unique @db.VarChar(255)
   password                            String               @db.VarChar(255)
   bio                                 String?              @db.Text
-  balance                             Float                @default(0)
   Vote                                Vote[]
   chapterComments                     chapterComments[]
   collections                         collections[]        @relation("UserCollections")

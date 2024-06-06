@@ -28,6 +28,7 @@ CREATE TABLE `chapterComments` (
     `chapterId` INTEGER UNSIGNED NOT NULL,
     `userId` CHAR(36) NOT NULL,
     `content` TEXT NOT NULL,
+    `voteCount` INTEGER NOT NULL DEFAULT 0,
 
     INDEX `chapterIndex`(`chapterId`),
     INDEX `userIndex`(`userId`),
@@ -43,6 +44,7 @@ CREATE TABLE `chapters` (
     `chapterNumber` INTEGER NOT NULL,
     `imageUrl` TEXT NOT NULL,
     `content` TEXT NOT NULL,
+    `voteCount` INTEGER NOT NULL DEFAULT 0,
 
     INDEX `literatureIndex`(`literatureId`),
     PRIMARY KEY (`chapterId`)
@@ -68,9 +70,9 @@ CREATE TABLE `forum` (
     `userId` CHAR(36) NOT NULL,
     `title` VARCHAR(255) NOT NULL,
     `content` TEXT NOT NULL,
-    `votes` INTEGER NOT NULL DEFAULT 0,
     `genreId` INTEGER UNSIGNED NOT NULL,
     `forumType` VARCHAR(50) NOT NULL,
+    `voteCount` INTEGER NOT NULL DEFAULT 0,
 
     INDEX `genreIndex`(`genreId`),
     INDEX `userIndex`(`userId`),
@@ -84,6 +86,7 @@ CREATE TABLE `forumComments` (
     `forumId` INTEGER UNSIGNED NOT NULL,
     `userId` CHAR(36) NOT NULL,
     `content` TEXT NOT NULL,
+    `voteCount` INTEGER NOT NULL DEFAULT 0,
 
     INDEX `forumIndex`(`forumId`),
     INDEX `userIndex`(`userId`),
@@ -110,6 +113,7 @@ CREATE TABLE `literature` (
     `genreId` INTEGER UNSIGNED NOT NULL,
     `language` VARCHAR(255) NOT NULL,
     `copyright` INTEGER NOT NULL,
+    `voteCount` INTEGER NOT NULL DEFAULT 0,
 
     INDEX `authorIndex`(`authorId`),
     INDEX `genreIndex`(`genreId`),
@@ -123,6 +127,7 @@ CREATE TABLE `literatureComments` (
     `userId` CHAR(36) NOT NULL,
     `literatureId` INTEGER UNSIGNED NOT NULL,
     `content` TEXT NOT NULL,
+    `voteCount` INTEGER NOT NULL DEFAULT 0,
 
     INDEX `literatureIndex`(`literatureId`),
     INDEX `userIndex`(`userId`),
@@ -145,8 +150,7 @@ CREATE TABLE `collections` (
 CREATE TABLE `transactions` (
     `transactionId` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
     `userId` CHAR(36) NOT NULL,
-    `beforeBalance` DOUBLE NOT NULL,
-    `afterBalance` DOUBLE NOT NULL,
+    `value` DOUBLE NOT NULL,
     `transactionType` VARCHAR(50) NOT NULL,
     `created_at` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
 
@@ -174,32 +178,31 @@ CREATE TABLE `users` (
     `email` VARCHAR(255) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
     `bio` TEXT NULL,
-    `balance` DOUBLE NOT NULL DEFAULT 0.0,
 
     UNIQUE INDEX `users_email_key`(`email`),
     PRIMARY KEY (`userId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `Vote` ADD CONSTRAINT `Vote_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`userId`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `Vote` ADD CONSTRAINT `Vote_chapterCommentId_fkey` FOREIGN KEY (`chapterCommentId`) REFERENCES `chapterComments`(`chapterCommentId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Vote` ADD CONSTRAINT `Vote_chapterId_fkey` FOREIGN KEY (`chapterId`) REFERENCES `chapters`(`chapterId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Vote` ADD CONSTRAINT `Vote_literatureId_fkey` FOREIGN KEY (`literatureId`) REFERENCES `literature`(`literatureId`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Vote` ADD CONSTRAINT `Vote_chapterCommentId_fkey` FOREIGN KEY (`chapterCommentId`) REFERENCES `chapterComments`(`chapterCommentId`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Vote` ADD CONSTRAINT `Vote_literatureCommentId_fkey` FOREIGN KEY (`literatureCommentId`) REFERENCES `literatureComments`(`literatureCommentId`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `Vote` ADD CONSTRAINT `Vote_forumCommentId_fkey` FOREIGN KEY (`forumCommentId`) REFERENCES `forumComments`(`forumCommentId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Vote` ADD CONSTRAINT `Vote_forumId_fkey` FOREIGN KEY (`forumId`) REFERENCES `forum`(`forumId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Vote` ADD CONSTRAINT `Vote_forumCommentId_fkey` FOREIGN KEY (`forumCommentId`) REFERENCES `forumComments`(`forumCommentId`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `Vote` ADD CONSTRAINT `Vote_literatureCommentId_fkey` FOREIGN KEY (`literatureCommentId`) REFERENCES `literatureComments`(`literatureCommentId`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Vote` ADD CONSTRAINT `Vote_literatureId_fkey` FOREIGN KEY (`literatureId`) REFERENCES `literature`(`literatureId`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Vote` ADD CONSTRAINT `Vote_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`userId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `chapterComments` ADD CONSTRAINT `chapterCommenterRelation` FOREIGN KEY (`userId`) REFERENCES `users`(`userId`) ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -241,10 +244,10 @@ ALTER TABLE `literatureComments` ADD CONSTRAINT `literatureRelation` FOREIGN KEY
 ALTER TABLE `literatureComments` ADD CONSTRAINT `userRelation` FOREIGN KEY (`userId`) REFERENCES `users`(`userId`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `collections` ADD CONSTRAINT `collections_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`userId`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `collections` ADD CONSTRAINT `collections_literatureId_fkey` FOREIGN KEY (`literatureId`) REFERENCES `literature`(`literatureId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `collections` ADD CONSTRAINT `collections_literatureId_fkey` FOREIGN KEY (`literatureId`) REFERENCES `literature`(`literatureId`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `collections` ADD CONSTRAINT `collections_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`userId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `transactions` ADD CONSTRAINT `transactions_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`userId`) ON DELETE CASCADE ON UPDATE CASCADE;
