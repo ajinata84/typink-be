@@ -10,7 +10,7 @@ datasource db {
 model Vote {
   voteId              Int                 @id @default(autoincrement()) @db.UnsignedInt
   userId              String              @db.Char(36)
-  voteType            Int                 @db.UnsignedInt
+  voteType            Int
   chapterId           Int?                @db.UnsignedInt
   literatureId        Int?                @db.UnsignedInt
   chapterCommentId    Int?                @db.UnsignedInt

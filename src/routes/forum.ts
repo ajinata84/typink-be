@@ -2,7 +2,11 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import multer from "multer";
-import jwtMiddleware, { customRequest } from "../middleware/jwtMiddleware";
+import {
+  jwtMiddleware,
+  customRequest,
+  optionalJwtMiddleware,
+} from "../middleware/jwtMiddleware";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -53,7 +57,7 @@ router.post(
 
       res.json(forum);
     } catch (error) {
-      res.status(500).json({ error: "Failed to create forum post" });
+      res.status(500).json({ error: error });
     }
   }
 );
@@ -117,27 +121,112 @@ router.get("/all", async (req, res) => {
 });
 
 // Get a specific forum post by ID
-router.get("/id/:id", async (req, res) => {
-  const { id } = req.params;
+router.get(
+  "/id/:id",
+  optionalJwtMiddleware,
+  async (req: customRequest, res) => {
+    const { id } = req.params;
+    const userId = req.userId; // This will be undefined if there's no token
 
-  try {
-    const forum = await prisma.forum.findUnique({
-      where: { forumId: Number(id) },
-      include: {
-        users: true, // Include user details
-        forumComments: true, // Include comments
-      },
-    });
+    try {
+      const forum = await prisma.forum.findUnique({
+        where: { forumId: Number(id) },
+        include: {
+          users: true, // Include user details
+        },
+      });
 
-    if (!forum) {
-      return res.status(404).json({ error: "Forum post not found" });
+      if (!forum) {
+        return res.status(404).json({ error: "Forum post not found" });
+      }
+
+      let vote = "";
+      if (userId) {
+        const userVote = await prisma.vote.findFirst({
+          where: {
+            forumId: Number(id),
+            userId,
+          },
+        });
+        if (userVote) {
+          vote = userVote.voteType === 1 ? "upvote" : "downvote";
+        }
+      }
+
+      res.json({ ...forum, vote });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch forum post" });
     }
-
-    res.json(forum);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch forum post" });
   }
-});
+);
+
+// Fetch forum comments for a specific forum ID
+router.get(
+  "/comments/:forumId",
+  optionalJwtMiddleware,
+  async (req: customRequest, res) => {
+    const { forumId } = req.params;
+    const userId = req.userId;
+
+    try {
+      const comments = await prisma.forumComments.findMany({
+        where: { forumId: Number(forumId) },
+        include: {
+          users: {
+            select: {
+              username: true,
+            },
+          },
+        },
+        orderBy: {
+          created_at: "desc",
+        },
+      });
+
+      if (userId) {
+        // Check if the user has voted on each comment
+        const commentVotes = await prisma.vote.findMany({
+          where: {
+            forumCommentId: {
+              in: comments.map((comment) => comment.forumCommentId),
+            },
+            userId,
+          },
+          select: {
+            forumCommentId: true,
+            voteType: true,
+          },
+        });
+
+        const votedCommentIds = commentVotes.reduce(
+          (acc: Record<number, number>, vote) => {
+            if (vote.forumCommentId !== null) {
+              acc[vote.forumCommentId] = vote.voteType;
+            }
+            return acc;
+          },
+          {}
+        );
+
+        const commentsWithVote = comments.map((comment) => ({
+          ...comment,
+          vote:
+            votedCommentIds[comment.forumCommentId] === 1
+              ? "upvote"
+              : votedCommentIds[comment.forumCommentId] === -1
+              ? "downvote"
+              : "",
+        }));
+
+        return res.json(commentsWithVote);
+      } else {
+        return res.json(comments);
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch forum comments" });
+    }
+  }
+);
 
 // Fetch forums with the newest comments
 router.get("/recent-activity", async (req, res) => {
@@ -162,14 +251,6 @@ router.get("/recent-activity", async (req, res) => {
     const forums = await prisma.forum.findMany({
       where: {
         forumId: { in: forumIds },
-      },
-      include: {
-        users: true,
-        forumComments: {
-          orderBy: {
-            created_at: "desc",
-          },
-        },
       },
     });
 

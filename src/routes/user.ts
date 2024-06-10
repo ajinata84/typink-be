@@ -1,7 +1,7 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import jwtMiddleware, { customRequest } from "../middleware/jwtMiddleware";
+import { jwtMiddleware, customRequest } from "../middleware/jwtMiddleware";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -26,7 +26,6 @@ router.get("/:userId", async (req, res) => {
         username: true,
         email: true,
         bio: true,
-        balance: true,
         Vote: true,
         chapterComments: true,
         collections: true,
@@ -88,7 +87,6 @@ router.get("/all", async (req, res) => {
         username: true,
         email: true,
         bio: true,
-        balance: true,
       },
     });
 

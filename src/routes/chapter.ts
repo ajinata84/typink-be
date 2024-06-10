@@ -2,7 +2,11 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import multer from "multer";
-import jwtMiddleware, { customRequest } from "../middleware/jwtMiddleware";
+import {
+  jwtMiddleware,
+  customRequest,
+  optionalJwtMiddleware,
+} from "../middleware/jwtMiddleware";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -162,32 +166,42 @@ router.get("/all-comments", async (req, res) => {
   }
 });
 
-// Get a chapter by ID with comments
-router.get("/:id", async (req, res) => {
-  const { id } = req.params;
+// Get a chapter by ID with vote status
+router.get(
+  "/id/:id",
+  optionalJwtMiddleware,
+  async (req: customRequest, res) => {
+    const { id } = req.params;
+    const userId = req.userId;
 
-  try {
-    const chapter = await prisma.chapters.findUnique({
-      where: { chapterId: Number(id) },
-      include: {
-        chapterComments: {
-          include: {
-            users: true, // Include user details of the commenter
+    try {
+      const chapter = await prisma.chapters.findUnique({
+        where: { chapterId: Number(id) },
+      });
+
+      if (!chapter) {
+        return res.status(404).json({ error: "Chapter not found" });
+      }
+
+      let vote = "";
+      if (userId) {
+        const userVote = await prisma.vote.findFirst({
+          where: {
+            chapterId: Number(id),
+            userId,
           },
-        },
-      },
-    });
+        });
+        if (userVote) {
+          vote = userVote.voteType === 1 ? "upvote" : "downvote";
+        }
+      }
 
-    if (!chapter) {
-      return res.status(404).json({ error: "Chapter not found" });
+      res.json({ ...chapter, vote });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch chapter" });
     }
-
-    res.json(chapter);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch chapter" });
   }
-});
-
+);
 // Comment on a chapter
 router.post(
   "/comment",
@@ -215,6 +229,70 @@ router.post(
       res.json(comment);
     } catch (error) {
       res.status(500).json({ error: error });
+    }
+  }
+);
+
+// Get comments for a chapter with vote status
+router.get(
+  "/comments/:id",
+  optionalJwtMiddleware,
+  async (req: customRequest, res) => {
+    const { id } = req.params;
+    const userId = req.userId;
+
+    try {
+      const comments = await prisma.chapterComments.findMany({
+        where: { chapterId: Number(id) },
+        include: {
+          users: {
+            select: {
+              username: true,
+            },
+          },
+        },
+      });
+
+      if (userId) {
+        const commentVotes = await prisma.vote.findMany({
+          where: {
+            chapterCommentId: {
+              in: comments.map((comment) => comment.chapterCommentId),
+            },
+            userId,
+          },
+          select: {
+            chapterCommentId: true,
+            voteType: true,
+          },
+        });
+
+        const votedCommentIds = commentVotes.reduce(
+          (acc: Record<number, number>, vote) => {
+            if (vote.chapterCommentId !== null) {
+              acc[vote.chapterCommentId] = vote.voteType;
+            }
+            return acc;
+          },
+          {}
+        );
+
+        const commentsWithVote = comments.map((comment) => ({
+          ...comment,
+          vote:
+            votedCommentIds[comment.chapterCommentId] === 1
+              ? "upvote"
+              : votedCommentIds[comment.chapterCommentId] === -1
+              ? "downvote"
+              : "",
+        }));
+
+        return res.json(commentsWithVote);
+      } else {
+        return res.json(comments);
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch comments" });
     }
   }
 );

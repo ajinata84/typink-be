@@ -5,7 +5,7 @@ export interface customRequest extends Request {
   userId?: string;
 }
 
-const jwtMiddleware = (
+export const jwtMiddleware = (
   req: customRequest,
   res: Response,
   next: NextFunction
@@ -26,4 +26,24 @@ const jwtMiddleware = (
   }
 };
 
-export default jwtMiddleware;
+export const optionalJwtMiddleware = (
+  req: customRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const authorizationHeader = req.headers.authorization;
+  if (authorizationHeader) {
+    const token = authorizationHeader.split(" ")[1];
+    if (token) {
+      try {
+        const secret = process.env.JWT_SECRET!;
+        const decoded = jwt.verify(token, secret) as { userId: string };
+        req.userId = decoded.userId;
+      } catch (error) {
+        // If token is invalid, ignore it and proceed without userId
+      }
+    }
+  }
+  next();
+};
+

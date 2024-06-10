@@ -2,7 +2,7 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import multer from "multer";
-import jwtMiddleware, { customRequest } from "../middleware/jwtMiddleware";
+import { jwtMiddleware, customRequest } from "../middleware/jwtMiddleware";
 
 const router = express.Router();
 const prisma = new PrismaClient();

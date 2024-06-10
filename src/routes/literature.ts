@@ -2,7 +2,11 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import multer from "multer";
-import jwtMiddleware, { customRequest } from "../middleware/jwtMiddleware";
+import {
+  customRequest,
+  jwtMiddleware,
+  optionalJwtMiddleware,
+} from "../middleware/jwtMiddleware";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -133,39 +137,124 @@ router.get("/author/:authorId", async (req, res) => {
   }
 });
 
-// Get literature by ID with comments and chapters
-router.get("/:id/fetch", async (req, res) => {
-  const { id } = req.params;
+// Get literature by ID with vote status
+router.get(
+  "/id/:id",
+  optionalJwtMiddleware,
+  async (req: customRequest, res) => {
+    const { id } = req.params;
+    const userId = req.userId;
 
-  try {
-    const literature = await prisma.literature.findUnique({
-      where: { literatureId: Number(id) },
-      include: {
-        genre: true,
-        users: {
-          select: {
-            username: true,
-            userId: true,
+    try {
+      const literature = await prisma.literature.findUnique({
+        where: { literatureId: Number(id) },
+        include: {
+          genre: true,
+          chapters: true,
+          users: {
+            select: {
+              username: true,
+              userId: true,
+            },
           },
         },
-        chapters: {
-          include: {
-            chapterComments: true,
-          },
-        },
-        literatureComments: true,
-      },
-    });
+      });
 
-    if (!literature) {
-      return res.status(404).json({ error: "Literature not found" });
+      if (!literature) {
+        return res.status(404).json({ error: "Literature not found" });
+      }
+
+      let vote = "";
+      if (userId) {
+        const userVote = await prisma.vote.findFirst({
+          where: {
+            literatureId: Number(id),
+            userId,
+          },
+        });
+        if (userVote) {
+          vote = userVote.voteType === 1 ? "upvote" : "downvote";
+        }
+      }
+
+      res.json({ ...literature, vote });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch literature" });
     }
-
-    res.json(literature);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch literature" });
   }
-});
+);
+
+// Fetch literature comments by literature ID
+router.get(
+  "/comments/:literatureId",
+  optionalJwtMiddleware,
+  async (req: customRequest, res) => {
+    const { literatureId } = req.params;
+    const userId = req.userId;
+
+    try {
+      const comments = await prisma.literatureComments.findMany({
+        where: { literatureId: Number(literatureId) },
+        include: {
+          users: {
+            select: {
+              username: true,
+            },
+          },
+        },
+        orderBy: {
+          created_at: "desc",
+        },
+      });
+
+      if (userId) {
+        const commentVotes = await prisma.vote.findMany({
+          where: {
+            literatureCommentId: {
+              in: comments.map((comment) => comment.literatureCommentId),
+            },
+            userId,
+          },
+          select: {
+            literatureCommentId: true,
+            voteType: true,
+          },
+        });
+
+        const votedCommentIds = commentVotes.reduce(
+          (acc: Record<number, number>, vote) => {
+            if (vote.literatureCommentId !== null) {
+              acc[vote.literatureCommentId] = vote.voteType;
+            }
+            return acc;
+          },
+          {}
+        );
+
+        const commentsWithVote = comments.map((comment) => ({
+          ...comment,
+          vote:
+            votedCommentIds[comment.literatureCommentId] === 1
+              ? "upvote"
+              : votedCommentIds[comment.literatureCommentId] === -1
+              ? "downvote"
+              : "",
+        }));
+
+        return res.json(commentsWithVote);
+      } else {
+        return res.json(
+          comments.map((c) => ({
+            ...c,
+            vote: "",
+          }))
+        );
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch comments" });
+    }
+  }
+);
 
 // Search literature
 router.get("/search", async (req, res) => {
@@ -231,28 +320,6 @@ router.post(
     }
   }
 );
-
-// Get all comments for a specific literature
-router.get("/:literatureId/comments", async (req, res) => {
-  const { literatureId } = req.params;
-
-  try {
-    const comments = await prisma.literatureComments.findMany({
-      where: { literatureId: Number(literatureId) },
-      include: {
-        users: {
-          select: {
-            username: true,
-          },
-        },
-      },
-    });
-
-    res.json(comments);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch comments" });
-  }
-});
 
 // Delete a literature comment
 router.delete(
@@ -445,7 +512,9 @@ router.delete("/delete/:id", jwtMiddleware, async (req: customRequest, res) => {
     }
 
     if (literature.authorId !== userId) {
-      return res.status(403).json({ error: "You are not authorized to delete this literature" });
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to delete this literature" });
     }
 
     // Delete the literature
