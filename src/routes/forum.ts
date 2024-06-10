@@ -116,7 +116,7 @@ router.get("/all", async (req, res) => {
 
     res.json(forums);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch forum posts" });
+    res.status(500).json({ error: error });
   }
 });
 
@@ -256,9 +256,7 @@ router.get("/recent-activity", async (req, res) => {
 
     res.json(forums);
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Failed to fetch forums with recent activity" });
+    res.status(500).json({ error: error });
   }
 });
 

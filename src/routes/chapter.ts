@@ -289,7 +289,12 @@ router.get(
 
         return res.json(commentsWithVote);
       } else {
-        return res.json(comments);
+        return res.json(
+          comments.map((c) => ({
+            ...c,
+            vote: "",
+          }))
+        );
       }
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch comments" });
