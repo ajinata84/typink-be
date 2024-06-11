@@ -251,6 +251,9 @@ router.get(
             },
           },
         },
+        orderBy: {
+          created_at: "desc",
+        },
       });
 
       if (userId) {

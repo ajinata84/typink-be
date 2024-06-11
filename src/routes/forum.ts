@@ -100,17 +100,14 @@ router.get("/all", async (req, res) => {
     return res.status(400).json({ errors: result.error.errors });
   }
 
-  const { page, pageSize } = result.data;
-  const take = pageSize ? parseInt(pageSize) : 10;
-  const skip = page ? (parseInt(page) - 1) * take : 0;
-
   try {
     const forums = await prisma.forum.findMany({
-      skip,
-      take,
       include: {
         users: true, // Include user details
         forumComments: true, // Include comments
+      },
+      orderBy: {
+        created_at: "desc",
       },
     });
 
@@ -233,7 +230,6 @@ router.get("/recent-activity", async (req, res) => {
   try {
     // Step 1: Get the latest comments
     const recentComments = await prisma.forumComments.findMany({
-      take: 10,
       orderBy: {
         created_at: "desc",
       },
@@ -252,9 +248,27 @@ router.get("/recent-activity", async (req, res) => {
       where: {
         forumId: { in: forumIds },
       },
+      include: {
+        users: {
+          select: {
+            username: true,
+            userId: true,
+          },
+        },
+        _count: {
+          select: {
+            forumComments: true,
+          },
+        },
+      },
     });
 
-    res.json(forums);
+    const response = forumIds.map((v) => {
+      const currForum = forums.find((f) => f.forumId == v);
+      return currForum;
+    });
+
+    res.json(response);
   } catch (error) {
     res.status(500).json({ error: error });
   }

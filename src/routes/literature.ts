@@ -150,7 +150,11 @@ router.get(
         where: { literatureId: Number(id) },
         include: {
           genre: true,
-          chapters: true,
+          chapters: {
+            orderBy: {
+              chapterNumber: "desc",
+            },
+          },
           users: {
             select: {
               username: true,
@@ -165,7 +169,17 @@ router.get(
       }
 
       let vote = "";
+      let donated = false;
       if (userId) {
+        const hasDonated = await prisma.donation.findFirst({
+          where: {
+            senderId: userId,
+            receiverId: literature.authorId,
+          },
+        });
+
+        donated = !!hasDonated;
+
         const userVote = await prisma.vote.findFirst({
           where: {
             literatureId: Number(id),
@@ -177,7 +191,7 @@ router.get(
         }
       }
 
-      res.json({ ...literature, vote });
+      res.json({ ...literature, vote, donated: donated });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch literature" });
     }
@@ -419,7 +433,17 @@ router.get("/top-picks", async (req, res) => {
       take: 10,
       include: {
         genre: true,
-        users: true,
+        users: {
+          select: {
+            username: true,
+            userId: true,
+          },
+        },
+        _count: {
+          select: {
+            Vote: true,
+          },
+        },
       },
       where: {
         chapters: {
@@ -440,7 +464,17 @@ router.get("/top-picks", async (req, res) => {
         take: 10,
         include: {
           genre: true,
-          users: true,
+          users: {
+            select: {
+              username: true,
+              userId: true,
+            },
+          },
+          _count: {
+            select: {
+              Vote: true,
+            },
+          },
         },
       });
 
