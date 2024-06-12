@@ -63,7 +63,7 @@ router.post(
 
       res.json(literature);
     } catch (error) {
-      res.status(500).json({ error: "Failed to create literature" });
+      res.status(500).json({ error: error });
     }
   }
 );

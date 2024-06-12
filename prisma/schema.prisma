@@ -170,12 +170,13 @@ model collections {
 }
 
 model transactions {
-  transactionId   Int      @id @default(autoincrement()) @db.UnsignedInt
-  userId          String   @db.Char(36)
+  transactionId   Int    @id @default(autoincrement()) @db.UnsignedInt
+  userId          String @db.Char(36)
   value           Float
-  transactionType String   @db.VarChar(50)
-  created_at      DateTime @default(now()) @db.Timestamp(0)
-  users           users    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  transactionType String @db.VarChar(50)
+  message         String @db.VarChar(255)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  users      users    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@index([userId], map: "userIndex")
 }
