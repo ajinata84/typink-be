@@ -134,6 +134,7 @@ router.get("/all", async (req, res) => {
               select: {
                 username: true,
                 userId: true,
+                imageUrl: true
               },
             },
           },
@@ -155,6 +156,7 @@ router.get("/all-comments", async (req, res) => {
           select: {
             username: true,
             userId: true,
+            imageUrl: true
           },
         },
       },
@@ -248,6 +250,8 @@ router.get(
           users: {
             select: {
               username: true,
+              userId: true,
+              imageUrl: true
             },
           },
         },

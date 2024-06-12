@@ -103,7 +103,13 @@ router.get("/all", async (req, res) => {
   try {
     const forums = await prisma.forum.findMany({
       include: {
-        users: true, // Include user details
+        users: {
+          select: {
+            username: true,
+            userId: true,
+            imageUrl: true,
+          },
+        }, // Include user details
         forumComments: true, // Include comments
       },
       orderBy: {
@@ -129,7 +135,13 @@ router.get(
       const forum = await prisma.forum.findUnique({
         where: { forumId: Number(id) },
         include: {
-          users: true, // Include user details
+          users: {
+            select: {
+              username: true,
+              userId: true,
+              imageUrl: true,
+            },
+          }, // Include user details
         },
       });
 
@@ -172,6 +184,8 @@ router.get(
           users: {
             select: {
               username: true,
+              userId: true,
+              imageUrl: true,
             },
           },
         },
@@ -253,6 +267,7 @@ router.get("/recent-activity", async (req, res) => {
           select: {
             username: true,
             userId: true,
+            imageUrl: true,
           },
         },
         _count: {
@@ -282,7 +297,13 @@ router.get("/announcements", async (req, res) => {
         forumType: "announcement",
       },
       include: {
-        users: true,
+        users: {
+          select: {
+            username: true,
+            userId: true,
+            imageUrl: true,
+          },
+        },
         forumComments: true,
       },
     });

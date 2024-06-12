@@ -87,6 +87,7 @@ router.get("/all", async (req, res) => {
           select: {
             username: true,
             userId: true,
+            imageUrl: true
           },
         },
       },
@@ -111,6 +112,7 @@ router.get("/genre/:genreId", async (req, res) => {
           select: {
             username: true,
             userId: true,
+            imageUrl: true
           },
         },
       },
@@ -135,6 +137,7 @@ router.get("/author/:authorId", async (req, res) => {
           select: {
             username: true,
             userId: true,
+            imageUrl: true
           },
         },
       },
@@ -168,6 +171,7 @@ router.get(
             select: {
               username: true,
               userId: true,
+              imageUrl: true
             },
           },
         },
@@ -222,6 +226,8 @@ router.get(
           users: {
             select: {
               username: true,
+              userId: true,
+              imageUrl: true
             },
           },
         },
@@ -300,7 +306,13 @@ router.get("/search", async (req, res) => {
       take,
       include: {
         genre: true,
-        users: true,
+        users: {
+          select: {
+            username: true,
+            userId: true,
+            imageUrl: true
+          },
+        },
       },
     });
 
@@ -392,6 +404,7 @@ router.get(
             select: {
               username: true,
               userId: true,
+              imageUrl: true
             },
           },
           chapters: {
@@ -446,6 +459,7 @@ router.get("/top-picks", async (req, res) => {
           select: {
             username: true,
             userId: true,
+            imageUrl: true
           },
         },
         _count: {
@@ -477,6 +491,7 @@ router.get("/top-picks", async (req, res) => {
             select: {
               username: true,
               userId: true,
+              imageUrl: true
             },
           },
           _count: {
@@ -515,8 +530,6 @@ router.get("/latest-updates", async (req, res) => {
       new Set(latestChapters.map((chapter) => chapter.literatureId))
     );
 
-    console.log(literatureIds);
-
     // Step 2: Fetch the literature records based on those chapters
     const latestUpdates = await prisma.literature.findMany({
       where: {
@@ -528,6 +541,7 @@ router.get("/latest-updates", async (req, res) => {
           select: {
             username: true,
             userId: true,
+            imageUrl: true
           },
         },
         chapters: true,

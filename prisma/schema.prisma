@@ -158,7 +158,7 @@ model literatureComments {
 }
 
 model collections {
-  collectionId String     @id @default(uuid())
+  collectionId Int        @id @default(autoincrement()) @db.UnsignedInt
   created_at   DateTime   @default(now()) @db.Timestamp(0)
   userId       String     @db.Char(36)
   literatureId Int        @db.UnsignedInt
@@ -170,13 +170,13 @@ model collections {
 }
 
 model transactions {
-  transactionId   Int    @id @default(autoincrement()) @db.UnsignedInt
-  userId          String @db.Char(36)
+  transactionId   Int      @id @default(autoincrement()) @db.UnsignedInt
+  userId          String   @db.Char(36)
   value           Float
-  transactionType String @db.VarChar(50)
-  message         String @db.VarChar(255)
-  created_at DateTime @default(now()) @db.Timestamp(0)
-  users      users    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  transactionType String   @db.VarChar(50)
+  created_at      DateTime @default(now()) @db.Timestamp(0)
+  message         String   @db.VarChar(255)
+  users           users    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@index([userId], map: "userIndex")
 }
@@ -196,6 +196,7 @@ model users {
   email                               String               @unique @db.VarChar(255)
   password                            String               @db.VarChar(255)
   bio                                 String?              @db.Text
+  imageUrl                            String?              @db.VarChar(255)
   Vote                                Vote[]
   chapterComments                     chapterComments[]
   collections                         collections[]        @relation("UserCollections")

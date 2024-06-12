@@ -60,7 +60,13 @@ router.get("/id/:userId", async (req, res) => {
         userId: true,
         created_at: true,
         username: true,
-        collections: true,
+        imageUrl: true,
+        bio: true,
+        collections: {
+          include: {
+            literature: true,
+          },
+        },
         literature: true,
       },
     });
