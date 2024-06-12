@@ -51,7 +51,7 @@ router.post("/register", upload.none(), async (req, res) => {
 
     const token = generateToken(user.userId);
 
-    res.json({ token, userId, username });
+    res.json({ token, userId, username, imageUrl: user.imageUrl });
   } catch (error) {
     res.status(500).json({ error: error });
   }
@@ -84,7 +84,12 @@ router.post("/login", upload.none(), async (req, res) => {
 
     const token = generateToken(user.userId);
 
-    res.json({ token, userId: user.userId, username: user.username });
+    res.json({
+      token,
+      userId: user.userId,
+      username: user.username,
+      imageUrl: user.imageUrl,
+    });
   } catch (error) {
     res.status(500).json({ error: error });
   }
