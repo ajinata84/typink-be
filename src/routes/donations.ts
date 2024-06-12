@@ -11,6 +11,7 @@ const upload = multer();
 const donationSchema = z.object({
   receiverId: z.string().uuid(),
   amount: z.coerce.number().positive(),
+  message: z.string(),
 });
 
 router.post(
@@ -24,7 +25,7 @@ router.post(
       return res.status(400).json({ errors: result.error.errors });
     }
 
-    const { receiverId, amount } = result.data;
+    const { receiverId, amount, message } = result.data;
     const senderId = req.userId!; // Extract userId from JWT token
 
     try {
@@ -54,7 +55,8 @@ router.post(
         data: {
           userId: senderId,
           value: -amount,
-          transactionType: "outgoing donation",
+          transactionType: "Outgoing donation",
+          message: message,
         },
       });
 
@@ -63,7 +65,8 @@ router.post(
         data: {
           userId: receiverId,
           value: amount,
-          transactionType: "incoming donation",
+          transactionType: "Incoming donation",
+          message: message,
         },
       });
 
