@@ -18,7 +18,16 @@ const createLiteratureSchema = z.object({
   imageUrl: z.string().url(),
   genreId: z.coerce.number().int().positive(),
   language: z.string().min(1),
-  copyright: z.coerce.number().int().positive(),
+  copyright: z.coerce.number().int(),
+});
+const editLiteratureSchema = z.object({
+  literatureId: z.coerce.number().int().positive(),
+  title: z.string().min(1),
+  synopsis: z.string().min(1),
+  imageUrl: z.string().url(),
+  genreId: z.coerce.number().int().positive(),
+  language: z.string().min(1),
+  copyright: z.coerce.number().int(),
 });
 
 const createLiteratureCommentSchema = z.object({
@@ -506,6 +515,8 @@ router.get("/latest-updates", async (req, res) => {
       new Set(latestChapters.map((chapter) => chapter.literatureId))
     );
 
+    console.log(literatureIds);
+
     // Step 2: Fetch the literature records based on those chapters
     const latestUpdates = await prisma.literature.findMany({
       where: {
@@ -523,12 +534,71 @@ router.get("/latest-updates", async (req, res) => {
       },
     });
 
-    res.json(latestUpdates);
+    const response = literatureIds.map((v) => {
+      const currlit = latestUpdates.find((f) => f.literatureId == v);
+      return currlit;
+    });
+
+    res.json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch latest updates" });
   }
 });
+
+router.put(
+  "/edit",
+  jwtMiddleware,
+  upload.none(),
+  async (req: customRequest, res) => {
+    const result = editLiteratureSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
+    }
+
+    const {
+      literatureId,
+      title,
+      synopsis,
+      imageUrl,
+      copyright,
+      genreId,
+      language,
+    } = result.data;
+    const userId = req.userId!;
+
+    try {
+      const literature = await prisma.literature.findUnique({
+        where: {
+          literatureId: literatureId,
+        },
+      });
+
+      if (!literature || literature.authorId !== userId) {
+        return res
+          .status(403)
+          .json({ error: "Not authorized to edit this literature" });
+      }
+
+      const updatedLiterature = await prisma.literature.update({
+        where: { literatureId },
+        data: {
+          title,
+          synopsis,
+          imageUrl,
+          copyright,
+          genreId,
+          language,
+        },
+      });
+
+      res.json(updatedLiterature);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to edit chapter" });
+    }
+  }
+);
 
 // Delete user's own literature
 router.delete("/delete/:id", jwtMiddleware, async (req: customRequest, res) => {
@@ -551,7 +621,11 @@ router.delete("/delete/:id", jwtMiddleware, async (req: customRequest, res) => {
         .json({ error: "You are not authorized to delete this literature" });
     }
 
-    // Delete the literature
+    await prisma.literatureComments.deleteMany({
+      where: {
+        literatureId: Number(id),
+      },
+    });
     await prisma.literature.delete({
       where: { literatureId: Number(id) },
     });

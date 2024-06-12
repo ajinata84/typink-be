@@ -16,7 +16,7 @@ const createChapterSchema = z.object({
   literatureId: z.coerce.number().int().positive(),
   chapterTitle: z.string().min(1),
   chapterNumber: z.coerce.number().int().positive(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.union([z.string().url(), z.string().min(0)]).optional(),
   content: z.string().min(1),
 });
 
@@ -301,6 +301,52 @@ router.get(
       }
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch comments" });
+    }
+  }
+);
+
+router.delete(
+  "/delete",
+  jwtMiddleware,
+  upload.none(),
+  async (req: customRequest, res) => {
+    const result = z
+      .object({
+        chapterId: z.coerce.number().positive(),
+      })
+      .safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
+    }
+
+    const { chapterId } = result.data;
+
+    const chapter = await prisma.chapters.findUnique({
+      where: { chapterId },
+      include: {
+        literature: true,
+      },
+    });
+
+    if (!chapter || chapter.literature.authorId !== req.userId!) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to edit this chapter" });
+    }
+
+    try {
+      await prisma.chapterComments.deleteMany({
+        where: {
+          chapterId: chapterId,
+        },
+      });
+      await prisma.chapters.delete({
+        where: { chapterId: chapterId },
+      });
+      res.json({ message: "Chapter deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: error });
     }
   }
 );
