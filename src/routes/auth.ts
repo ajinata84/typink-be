@@ -1,10 +1,10 @@
-import express from 'express';
-import { PrismaClient } from '@prisma/client';
-import argon2 from 'argon2';
-import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
-import { z } from 'zod';
-import multer from 'multer';
+import express from "express";
+import { PrismaClient } from "@prisma/client";
+import argon2 from "argon2";
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
+import multer from "multer";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -12,7 +12,7 @@ const upload = multer();
 
 const generateToken = (userId: string) => {
   const secret = process.env.JWT_SECRET!;
-  return jwt.sign({ userId }, secret, { expiresIn: '30d' });
+  return jwt.sign({ userId }, secret, { expiresIn: "30d" });
 };
 
 // Zod schemas
@@ -28,7 +28,7 @@ const loginSchema = z.object({
 });
 
 // Register Route
-router.post('/register', upload.none(), async (req, res) => {
+router.post("/register", upload.none(), async (req, res) => {
   const result = registerSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -51,14 +51,14 @@ router.post('/register', upload.none(), async (req, res) => {
 
     const token = generateToken(user.userId);
 
-    res.json({ token });
+    res.json({ token, userId });
   } catch (error) {
     res.status(500).json({ error: error });
   }
 });
 
 // Login Route
-router.post('/login', upload.none(), async (req, res) => {
+router.post("/login", upload.none(), async (req, res) => {
   const result = loginSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -73,20 +73,20 @@ router.post('/login', upload.none(), async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     const validPassword = await argon2.verify(user.password, password);
 
     if (!validPassword) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     const token = generateToken(user.userId);
 
-    res.json({ token });
-  } catch (error) { 
-    res.status(500).json({ error: 'User authentication failed' });
+    res.json({ token, userId: user.userId });
+  } catch (error) {
+    res.status(500).json({ error: error });
   }
 });
 
