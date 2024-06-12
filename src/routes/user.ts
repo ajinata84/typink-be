@@ -49,6 +49,32 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
+// Get user information by ID
+router.get("/id/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await prisma.users.findUnique({
+      where: { userId },
+      select: {
+        userId: true,
+        created_at: true,
+        username: true,
+        collections: true,
+        literature: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch user information" });
+  }
+});
+
 // Update user profile
 router.put("/update", jwtMiddleware, async (req: customRequest, res) => {
   const result = updateUserSchema.safeParse(req.body);
