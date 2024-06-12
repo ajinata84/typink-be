@@ -78,7 +78,7 @@ router.post(
 );
 
 router.get(
-  "/donators/:receiverId",
+  "/donators/receiving/:receiverId",
   jwtMiddleware,
   async (req: customRequest, res) => {
     const receiverId = req.params.receiverId;
@@ -86,10 +86,49 @@ router.get(
     try {
       const donators = await prisma.donation.findMany({
         where: { receiverId },
-        select: {
-          senderId: true,
-          amount: true,
-          created_at: true,
+
+        include: {
+          users_donation_receiverIdTousers: {
+            select: {
+              username: true,
+            },
+          },
+          users_donation_senderIdTousers: {
+            select: {
+              username: true,
+            },
+          },
+        },
+      });
+
+      res.json(donators);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch donators" });
+    }
+  }
+);
+
+router.get(
+  "/donators/sender/:senderId",
+  jwtMiddleware,
+  async (req: customRequest, res) => {
+    const senderId = req.params.senderId;
+
+    try {
+      const donators = await prisma.donation.findMany({
+        where: { senderId },
+
+        include: {
+          users_donation_receiverIdTousers: {
+            select: {
+              username: true,
+            },
+          },
+          users_donation_senderIdTousers: {
+            select: {
+              username: true,
+            },
+          },
         },
       });
 

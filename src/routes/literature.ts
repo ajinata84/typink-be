@@ -37,8 +37,6 @@ const createLiteratureCommentSchema = z.object({
 
 const searchLiteratureSchema = z.object({
   query: z.string().min(1),
-  page: z.string().optional(),
-  pageSize: z.string().optional(),
 });
 
 // Create literature for a user
@@ -87,7 +85,7 @@ router.get("/all", async (req, res) => {
           select: {
             username: true,
             userId: true,
-            imageUrl: true
+            imageUrl: true,
           },
         },
       },
@@ -112,7 +110,7 @@ router.get("/genre/:genreId", async (req, res) => {
           select: {
             username: true,
             userId: true,
-            imageUrl: true
+            imageUrl: true,
           },
         },
       },
@@ -137,7 +135,7 @@ router.get("/author/:authorId", async (req, res) => {
           select: {
             username: true,
             userId: true,
-            imageUrl: true
+            imageUrl: true,
           },
         },
       },
@@ -171,7 +169,7 @@ router.get(
             select: {
               username: true,
               userId: true,
-              imageUrl: true
+              imageUrl: true,
             },
           },
         },
@@ -182,6 +180,7 @@ router.get(
       }
 
       let vote = "";
+      let saved = false;
       let donated = false;
       if (userId) {
         const hasDonated = await prisma.donation.findFirst({
@@ -191,7 +190,15 @@ router.get(
           },
         });
 
+        const hasAdded = await prisma.collections.findFirst({
+          where: {
+            userId: userId,
+            literatureId: literature.literatureId,
+          },
+        });
+
         donated = !!hasDonated;
+        saved = !!hasAdded;
 
         const userVote = await prisma.vote.findFirst({
           where: {
@@ -204,7 +211,7 @@ router.get(
         }
       }
 
-      res.json({ ...literature, vote, donated: donated });
+      res.json({ ...literature, vote, donated: donated, saved });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch literature" });
     }
@@ -227,7 +234,7 @@ router.get(
             select: {
               username: true,
               userId: true,
-              imageUrl: true
+              imageUrl: true,
             },
           },
         },
@@ -292,25 +299,20 @@ router.get("/search", async (req, res) => {
   if (!result.success) {
     return res.status(400).json({ errors: result.error.errors });
   }
-
-  const { query, page, pageSize } = result.data;
-  const take = pageSize ? parseInt(pageSize) : 10;
-  const skip = page ? (parseInt(page) - 1) * take : 0;
-
+  const { query } = result.data;
   try {
     const literature = await prisma.literature.findMany({
       where: {
         OR: [{ title: { contains: query } }, { synopsis: { contains: query } }],
       },
-      skip,
-      take,
+
       include: {
         genre: true,
         users: {
           select: {
             username: true,
             userId: true,
-            imageUrl: true
+            imageUrl: true,
           },
         },
       },
@@ -404,7 +406,7 @@ router.get(
             select: {
               username: true,
               userId: true,
-              imageUrl: true
+              imageUrl: true,
             },
           },
           chapters: {
@@ -459,7 +461,7 @@ router.get("/top-picks", async (req, res) => {
           select: {
             username: true,
             userId: true,
-            imageUrl: true
+            imageUrl: true,
           },
         },
         _count: {
@@ -491,7 +493,7 @@ router.get("/top-picks", async (req, res) => {
             select: {
               username: true,
               userId: true,
-              imageUrl: true
+              imageUrl: true,
             },
           },
           _count: {
@@ -541,7 +543,7 @@ router.get("/latest-updates", async (req, res) => {
           select: {
             username: true,
             userId: true,
-            imageUrl: true
+            imageUrl: true,
           },
         },
         chapters: true,

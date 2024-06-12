@@ -11,6 +11,7 @@ const updateUserSchema = z.object({
   bio: z.string().optional(),
   email: z.string().email().optional(),
   password: z.string().min(6).optional(),
+  imageUrl: z.union([z.string().url(), z.string().min(0)]).optional(),
 });
 
 // Get user information by ID
@@ -89,17 +90,15 @@ router.put("/update", jwtMiddleware, async (req: customRequest, res) => {
     return res.status(400).json({ errors: result.error.errors });
   }
 
-  const { username, bio, email, password } = result.data;
+  const { bio, imageUrl } = result.data;
   const userId = req.userId!;
 
   try {
     const updatedUser = await prisma.users.update({
       where: { userId },
       data: {
-        username,
         bio,
-        email,
-        password,
+        imageUrl,
       },
     });
 

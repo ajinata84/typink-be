@@ -60,16 +60,16 @@ router.get("/:id", async (req, res) => {
 
 // Delete collection for the authenticated user
 router.delete(
-  "/:collectionId",
+  "/:literatureId",
   jwtMiddleware,
   async (req: customRequest, res) => {
-    const { collectionId } = req.params;
-    const userId = req.userId;
+    const { literatureId } = req.params;
+    const userId = req.userId!;
 
     try {
       // Check if the collection belongs to the authenticated user
-      const collection = await prisma.collections.findUnique({
-        where: { collectionId: Number(collectionId) },
+      const collection = await prisma.collections.findFirst({
+        where: { literatureId: Number(literatureId), userId: userId },
       });
 
       if (!collection) {
@@ -82,7 +82,7 @@ router.delete(
 
       // Delete the collection
       await prisma.collections.delete({
-        where: { collectionId: Number(collectionId) },
+        where: { collectionId: collection.collectionId },
       });
 
       res.status(204).send();
