@@ -145,7 +145,8 @@ router.get(
               userId: true,
               imageUrl: true,
             },
-          }, // Include user details
+          }, 
+          forumComments: true
         },
       });
 
@@ -316,6 +317,7 @@ router.get("/recent-activity", async (req, res) => {
         forumId: { in: forumIds },
       },
       include: {
+        forumComments: true,
         users: {
           select: {
             username: true,
