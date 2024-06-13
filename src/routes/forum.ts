@@ -135,6 +135,11 @@ router.get(
       const forum = await prisma.forum.findUnique({
         where: { forumId: Number(id) },
         include: {
+           forumComments: {
+            select: {
+              userId: true
+            }
+          },
           users: {
             select: {
               username: true,
