@@ -29,6 +29,10 @@ const forumQuerySchema = z.object({
   pageSize: z.string().optional(),
 });
 
+const searchForumSchema = z.object({
+  query: z.string().min(1),
+});
+
 // Create a forum post
 router.post(
   "/create",
@@ -168,6 +172,55 @@ router.get(
     }
   }
 );
+
+router.get("/search", async (req, res) => {
+  const result = searchForumSchema.safeParse(req.query);
+
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.errors });
+  }
+  const { query } = result.data;
+  try {
+    const literature = await prisma.forum.findMany({
+      where: {
+        OR: [
+          { content: { contains: query } },
+          { forumId: { equals: Number(query) } },
+          { title: { contains: query } },
+          { users: { username: { equals: query } } },
+        ],
+      },
+    });
+
+    res.json(literature);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to search Chapters" });
+  }
+});
+
+router.get("/search-comment", async (req, res) => {
+  const result = searchForumSchema.safeParse(req.query);
+
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.errors });
+  }
+  const { query } = result.data;
+  try {
+    const literature = await prisma.forumComments.findMany({
+      where: {
+        OR: [
+          { content: { contains: query } },
+          { forumCommentId: { equals: Number(query) } },
+          { users: { username: { equals: query } } },
+        ],
+      },
+    });
+
+    res.json(literature);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to search Chapters" });
+  }
+});
 
 // Fetch forum comments for a specific forum ID
 router.get(

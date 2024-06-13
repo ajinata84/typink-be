@@ -33,6 +33,10 @@ const commentSchema = z.object({
   content: z.string().min(1),
 });
 
+const searchChapterSchema = z.object({
+  query: z.string().min(1),
+});
+
 // Create a chapter for user's own literature
 router.post(
   "/create",
@@ -76,6 +80,53 @@ router.post(
     }
   }
 );
+
+router.get("/search", async (req, res) => {
+  const result = searchChapterSchema.safeParse(req.query);
+
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.errors });
+  }
+  const { query } = result.data;
+  try {
+    const literature = await prisma.chapters.findMany({
+      where: {
+        OR: [
+          { chapterTitle: { contains: query } },
+          { chapterId: { equals: Number(query) } },
+        ],
+      },
+    });
+
+    res.json(literature);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to search Chapters" });
+  }
+});
+
+router.get("/search-comment", async (req, res) => {
+  const result = searchChapterSchema.safeParse(req.query);
+
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.errors });
+  }
+  const { query } = result.data;
+  try {
+    const literature = await prisma.chapterComments.findMany({
+      where: {
+        OR: [
+          { content: { contains: query } },
+          { chapterCommentId: { equals: Number(query) } },
+          { users: { username: { equals: query } } },
+        ],
+      },
+    });
+
+    res.json(literature);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to search Chapters" });
+  }
+});
 
 // Edit a chapter
 router.put(
@@ -134,7 +185,7 @@ router.get("/all", async (req, res) => {
               select: {
                 username: true,
                 userId: true,
-                imageUrl: true
+                imageUrl: true,
               },
             },
           },
@@ -156,7 +207,7 @@ router.get("/all-comments", async (req, res) => {
           select: {
             username: true,
             userId: true,
-            imageUrl: true
+            imageUrl: true,
           },
         },
       },
@@ -251,7 +302,7 @@ router.get(
             select: {
               username: true,
               userId: true,
-              imageUrl: true
+              imageUrl: true,
             },
           },
         },

@@ -324,6 +324,30 @@ router.get("/search", async (req, res) => {
   }
 });
 
+router.get("/search-comment", async (req, res) => {
+  const result = searchLiteratureSchema.safeParse(req.query);
+
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.errors });
+  }
+  const { query } = result.data;
+  try {
+    const literature = await prisma.literatureComments.findMany({
+      where: {
+        OR: [
+          { content: { contains: query } },
+          { literatureCommentId: { equals: Number(query) } },
+          { users: { username: { equals: query } } },
+        ],
+      },
+    });
+
+    res.json(literature);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to search Chapters" });
+  }
+});
+
 // Create a literature comment
 router.post(
   "/:literatureId/comment",

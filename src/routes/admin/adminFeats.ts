@@ -17,7 +17,7 @@ const deleteSchema = z.object({
 const forumSchema = z.object({
   title: z.string().min(1),
   content: z.string().min(1),
-  genreId: z.number().positive(),
+  genreId: z.coerce.number().positive(),
   forumType: z.string().min(1),
 });
 
