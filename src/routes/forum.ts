@@ -222,7 +222,6 @@ router.get("/search-comment", async (req, res) => {
           { content: { contains: query } },
           { users: { username: { equals: query } } },
           { forum: { title: { contains: query } } },
-
         ],
       },
       select: {
@@ -374,7 +373,8 @@ router.get("/announcements", async (req, res) => {
   try {
     const announcements = await prisma.forum.findMany({
       where: {
-        forumType: "announcement",
+        forumType: "Announcement",
+        genreId: 0,
       },
       include: {
         users: {

@@ -205,7 +205,7 @@ router.post(
         data: {
           title,
           content,
-          userId: req.adminId!.toString(),
+          userId: "2c6572ce-9e62-453f-a889-106c2c30ebef",
           forumType: "Announcement",
           genreId: 0,
         },
@@ -224,7 +224,7 @@ router.put(
   upload.none(),
   async (req: CustomAdminRequest, res) => {
     const updateForumSchema = forumSchema.extend({
-      forumId: z.number().positive(),
+      forumId: z.coerce.number().positive(),
     });
 
     const result = updateForumSchema.safeParse(req.body);
@@ -233,7 +233,7 @@ router.put(
       return res.status(400).json({ errors: result.error.errors });
     }
 
-    const { forumId, title, content, genreId, forumType } = result.data;
+    const { forumId, title, content } = result.data;
 
     try {
       const forum = await prisma.forum.update({
