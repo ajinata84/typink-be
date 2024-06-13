@@ -306,7 +306,10 @@ router.get("/search", async (req, res) => {
         OR: [{ title: { contains: query } }, { synopsis: { contains: query } }],
       },
 
-      include: {
+      select: {
+        literatureId: true,
+        title: true,
+        synopsis: true,
         genre: true,
         users: {
           select: {
@@ -336,9 +339,24 @@ router.get("/search-comment", async (req, res) => {
       where: {
         OR: [
           { content: { contains: query } },
-          { literatureCommentId: { equals: Number(query) } },
           { users: { username: { equals: query } } },
+          { literature: { title: { contains: query } } },
         ],
+      },
+      select: {
+        users: {
+          select: {
+            username: true,
+          },
+        },
+        content: true,
+        created_at: true,
+        literatureCommentId: true,
+        literature: {
+          select: {
+            title: true,
+          },
+        },
       },
     });
 

@@ -36,6 +36,10 @@ router.delete(
     const { id } = result.data;
 
     try {
+      await prisma.forumComments.deleteMany({
+        where: { forumId: id },
+      });
+
       await prisma.forum.delete({
         where: { forumId: id },
       });
@@ -134,6 +138,15 @@ router.delete(
     const { id } = result.data;
 
     try {
+      await prisma.chapterComments.deleteMany({
+        where: { chapters: { literatureId: id } },
+      });
+      await prisma.chapters.deleteMany({
+        where: { literatureId: id },
+      });
+      await prisma.literatureComments.deleteMany({
+        where: { literatureId: id },
+      });
       await prisma.literature.delete({
         where: { literatureId: id },
       });
@@ -158,6 +171,11 @@ router.delete(
     const { id } = result.data;
 
     try {
+      await prisma.chapterComments.deleteMany({
+        where: {
+          chapterId: id,
+        },
+      });
       await prisma.chapters.delete({
         where: { chapterId: id },
       });
@@ -239,11 +257,9 @@ router.get("/total-author", adminMiddleware, async (_req, res) => {
 
     res.json({ totalUsers: totalUsers.length });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: "Failed to fetch total users who have created literature",
-      });
+    res.status(500).json({
+      error: "Failed to fetch total users who have created literature",
+    });
   }
 });
 

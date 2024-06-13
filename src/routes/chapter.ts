@@ -93,14 +93,31 @@ router.get("/search", async (req, res) => {
       where: {
         OR: [
           { chapterTitle: { contains: query } },
-          { chapterId: { equals: Number(query) } },
+          { content: { contains: query } },
+          { literature: { title: { contains: query } } },
         ],
+      },
+      select: {
+        chapterId: true,
+        chapterTitle: true,
+        created_at: true,
+        literature: {
+          select: {
+            title: true,
+            users: {
+              select: {
+                username: true,
+              },
+            },
+          },
+        },
+        content: true,
       },
     });
 
     res.json(literature);
   } catch (error) {
-    res.status(500).json({ error: "Failed to search Chapters" });
+    res.status(500).json({ error: error });
   }
 });
 
@@ -116,9 +133,24 @@ router.get("/search-comment", async (req, res) => {
       where: {
         OR: [
           { content: { contains: query } },
-          { chapterCommentId: { equals: Number(query) } },
           { users: { username: { equals: query } } },
+          { chapters: { chapterTitle: { contains: query } } },
         ],
+      },
+      select: {
+        users: {
+          select: {
+            username: true,
+          },
+        },
+        content: true,
+        created_at: true,
+        chapterCommentId: true,
+        chapters: {
+          select: {
+            chapterTitle: true,
+          },
+        },
       },
     });
 

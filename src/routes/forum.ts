@@ -145,8 +145,8 @@ router.get(
               userId: true,
               imageUrl: true,
             },
-          }, 
-          forumComments: true
+          },
+          forumComments: true,
         },
       });
 
@@ -186,16 +186,25 @@ router.get("/search", async (req, res) => {
       where: {
         OR: [
           { content: { contains: query } },
-          { forumId: { equals: Number(query) } },
           { title: { contains: query } },
-          { users: { username: { equals: query } } },
+          { users: { username: { contains: query } } },
         ],
+      },
+      select: {
+        forumId: true,
+        title: true,
+        users: {
+          select: {
+            username: true,
+          },
+        },
+        content: true,
       },
     });
 
     res.json(literature);
   } catch (error) {
-    res.status(500).json({ error: "Failed to search Chapters" });
+    res.status(500).json({ error: error });
   }
 });
 
@@ -211,9 +220,25 @@ router.get("/search-comment", async (req, res) => {
       where: {
         OR: [
           { content: { contains: query } },
-          { forumCommentId: { equals: Number(query) } },
           { users: { username: { equals: query } } },
+          { forum: { title: { contains: query } } },
+
         ],
+      },
+      select: {
+        forum: {
+          select: {
+            title: true,
+          },
+        },
+        users: {
+          select: {
+            username: true,
+          },
+        },
+        content: true,
+        created_at: true,
+        forumCommentId: true,
       },
     });
 
